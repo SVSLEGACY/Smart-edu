@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Search, Bell, Check, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, Check, ChevronDown, Sparkles, LogOut, GraduationCap } from 'lucide-react';
 import { Avatar } from '../common/Avatar';
 import { ThemeToggle } from '../common/ThemeToggle';
-import { currentUser } from '../../data/mockData';
-import { Course } from '../../types';
+import { currentUser as defaultUser } from '../../data/mockData';
+import { Course, UserProfile } from '../../types';
 
 interface LearnifyHeaderProps {
   onSearch?: (query: string) => void;
   onSelectCourse?: (courseId: string) => void;
   onLaunchQuiz?: () => void;
+  currentUser?: UserProfile;
+  onLogout?: () => void;
   courses: Course[];
 }
 
@@ -16,6 +18,8 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   onSearch,
   onSelectCourse,
   onLaunchQuiz,
+  currentUser = defaultUser,
+  onLogout,
   courses,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,31 +185,58 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left cursor-pointer"
           >
-            <Avatar name={currentUser.name} variant="kacie" size="sm" />
+            <Avatar name={currentUser.name} size="sm" />
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{currentUser.name}</span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">{currentUser.handle}</span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
+                {currentUser.rollNumber || currentUser.handle}
+              </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-zinc-400 ml-0.5" />
           </button>
 
           {/* Profile Dropdown Menu */}
           {showProfileMenu && (
-            <div className="absolute right-0 top-12 w-56 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-xl p-2 z-50">
-              <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-700">
+            <div className="absolute right-0 top-12 w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-xl p-2 z-50">
+              <div className="px-3 py-2.5 border-b border-zinc-100 dark:border-zinc-700">
                 <p className="text-xs font-bold text-zinc-900 dark:text-white">{currentUser.name}</p>
-                <p className="text-[11px] text-zinc-400">{currentUser.handle}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400">
+                    {currentUser.rollNumber || 'PY-STUDENT'}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 truncate">{currentUser.handle}</span>
+                </div>
+                {currentUser.department && (
+                  <p className="text-[10px] text-zinc-400 mt-1 truncate">{currentUser.department}</p>
+                )}
               </div>
               <div className="py-1">
                 <div className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between">
-                  <span>Enrolled Courses</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">3 active</span>
+                  <span>Enrolled Tracks</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">4 Python Topics</span>
                 </div>
                 <div className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between">
-                  <span>Certificates</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">5 earned</span>
+                  <span>Portal Status</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                    <span>Active Student</span>
+                  </span>
                 </div>
               </div>
+              {onLogout && (
+                <div className="pt-1.5 border-t border-zinc-100 dark:border-zinc-700">
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      onLogout();
+                    }}
+                    className="w-full px-3 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-semibold flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Log out / Switch Student</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

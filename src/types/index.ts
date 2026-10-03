@@ -5,6 +5,9 @@ export type CategoryFilter = 'All courses' | 'Core & Slicing' | 'Functions & Sco
 export interface UserProfile {
   name: string;
   handle: string;
+  rollNumber?: string;
+  batch?: string;
+  department?: string;
   avatarUrl?: string;
   initials: string;
   notificationsCount: number;

@@ -19,8 +19,12 @@ import { CourseDashboard } from './components/desktop/CourseDashboard';
 import { CoursePlayer } from './components/desktop/CoursePlayer';
 import { NotesAndBookmarksView } from './components/desktop/NotesAndBookmarksView';
 import { QuizEngine } from './components/desktop/QuizEngine';
+import { StudentLogin } from './components/desktop/StudentLogin';
+import { getStoredStudentSession, removeStudentSession } from './data/studentAccounts';
+import { UserProfile } from './types';
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredStudentSession());
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
   const [activeCourseId, setActiveCourseId] = useState<string>('course-python-slicing');
   const [searchFilter, setSearchFilter] = useState<string>('');
@@ -151,6 +155,17 @@ export default function App() {
     setCurrentScreen(screen);
   };
 
+  const handleLogout = () => {
+    removeStudentSession();
+    setCurrentUser(null);
+    setCurrentScreen('dashboard');
+  };
+
+  // If student is not logged in, enforce Student Login Interface
+  if (!currentUser) {
+    return <StudentLogin onLoginSuccess={(user) => setCurrentUser(user)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#121214] text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-300 antialiased overflow-x-hidden">
       <div className="flex-1 flex w-full min-h-screen overflow-hidden">
@@ -158,6 +173,7 @@ export default function App() {
         <LearnifySidebar
           currentScreen={currentScreen}
           onNavigate={handleNavigate}
+          onLogout={handleLogout}
         />
 
         {/* Main Content Area */}
@@ -168,6 +184,8 @@ export default function App() {
             onSearch={setSearchFilter}
             onSelectCourse={handleSelectCourse}
             onLaunchQuiz={() => handleLaunchQuiz()}
+            currentUser={currentUser}
+            onLogout={handleLogout}
           />
 
           {/* Screen Content with Smooth Animated Page Transitions */}

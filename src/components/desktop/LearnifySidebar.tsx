@@ -15,11 +15,13 @@ import { ScreenType } from '../../types';
 interface LearnifySidebarProps {
   currentScreen: ScreenType;
   onNavigate: (screen: ScreenType) => void;
+  onLogout?: () => void;
 }
 
 export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
   currentScreen,
   onNavigate,
+  onLogout,
 }) => {
   const isCoursesActive = currentScreen === 'dashboard' || currentScreen === 'course-player';
 
@@ -147,10 +149,16 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
       <div className="flex flex-col items-center gap-3">
         {/* Exit / Log Out Icon */}
         <button
-          onClick={() => onNavigate('dashboard')}
+          onClick={() => {
+            if (onLogout) {
+              onLogout();
+            } else {
+              onNavigate('dashboard');
+            }
+          }}
           aria-label="Sign out"
           className="w-11 h-11 rounded-2xl flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:bg-zinc-800/60 transition-all cursor-pointer"
-          title="Sign Out"
+          title="Sign Out / Switch Student"
         >
           <LogOut className="w-5 h-5" />
         </button>
