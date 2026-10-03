@@ -15,6 +15,9 @@ import {
   Sparkles,
   Smartphone,
   Layers,
+  Flame,
+  Zap,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Avatar } from '../common/Avatar';
@@ -47,6 +50,21 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   // Schedule state
   const [selectedDay, setSelectedDay] = useState<number>(14);
   const [progressToday, setProgressToday] = useState<number>(58);
+
+  // Daily Streak State & Animation
+  const [streakDays, setStreakDays] = useState<number>(7);
+  const [isCheckingStreak, setIsCheckingStreak] = useState<boolean>(false);
+  const [showStreakModal, setShowStreakModal] = useState<boolean>(false);
+  const [streakToast, setStreakToast] = useState<string | null>(null);
+
+  const handleCheckStreak = () => {
+    setIsCheckingStreak(true);
+    setStreakToast('🔥 Daily Streak Checked: 7 Days Active!');
+    setTimeout(() => {
+      setShowStreakModal(true);
+      setIsCheckingStreak(false);
+    }, 450);
+  };
 
   // Timer simulation for quiz
   const [timeLeft, setTimeLeft] = useState<number>(381); // 6:21 in seconds
@@ -103,28 +121,118 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   // Render Mobile Dashboard (Screen 1 in Image 2/3)
   const renderDashboardScreen = () => (
     <div className="flex flex-col h-full bg-[#FBFBFC] dark:bg-[#18181B] text-zinc-900 dark:text-zinc-100 p-5 overflow-y-auto scrollbar-none select-none">
-      {/* Top Header: Len Avatar + Hello Len + Reading Bar + Bell */}
-      <div className="flex items-center justify-between pb-4">
-        <div className="flex items-center gap-3">
+      {/* Top Header: Len Avatar + Hello Len + Reading Bar + Daily Streak + Bell */}
+      <div className="flex items-center justify-between pb-3">
+        <div className="flex items-center gap-2.5">
           <Avatar name="Len" variant="len" size="md" />
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-zinc-900 dark:text-white">Hello Len</span>
-            {/* Small book icon & pink reading bar from screenshot */}
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] text-pink-500">📖</span>
-              <div className="w-16 h-1.5 rounded-full bg-pink-100 dark:bg-pink-950/60 overflow-hidden">
+            <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">Hello Len</span>
+            {/* Small book icon & pink reading bar, clickable to check progress */}
+            <button
+              onClick={handleCheckStreak}
+              className="flex items-center gap-1.5 mt-0.5 group cursor-pointer text-left"
+              title="Click to check your study streak"
+            >
+              <span className="text-[10px] text-pink-500 group-hover:scale-110 transition-transform">📖</span>
+              <div className="w-14 h-1.5 rounded-full bg-pink-100 dark:bg-pink-950/60 overflow-hidden">
                 <div className="w-3/5 h-full bg-pink-500 rounded-full" />
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
-        {/* Bell Button */}
-        <button className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700 flex items-center justify-center relative shadow-xs">
-          <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-          <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-rose-500" />
-        </button>
+        {/* Right Actions: Daily Streak Counter with Fire Icon + Bell */}
+        <div className="flex items-center gap-2">
+          {/* Daily Streak Counter Button */}
+          <motion.button
+            onClick={handleCheckStreak}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-orange-500/20 to-rose-500/15 border border-orange-500/35 dark:border-orange-500/50 text-orange-600 dark:text-orange-400 font-bold text-xs shadow-xs hover:shadow-orange-500/20 transition-all cursor-pointer relative overflow-hidden group"
+            title="Daily Streak: Click to check your progress"
+          >
+            {/* Fire Icon with pulse and click animation */}
+            <motion.div
+              animate={
+                isCheckingStreak
+                  ? {
+                      scale: [1, 1.5, 0.85, 1.3, 1],
+                      rotate: [0, -18, 18, -10, 0],
+                      filter: [
+                        'drop-shadow(0 0 2px rgba(249,115,22,0.4))',
+                        'drop-shadow(0 0 10px rgba(239,68,68,0.9))',
+                        'drop-shadow(0 0 4px rgba(249,115,22,0.5))',
+                      ],
+                    }
+                  : {
+                      scale: [1, 1.12, 1],
+                    }
+              }
+              transition={
+                isCheckingStreak
+                  ? { duration: 0.7, ease: 'easeOut' }
+                  : { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
+              }
+              className="flex items-center justify-center shrink-0"
+            >
+              <Flame className="w-4 h-4 fill-orange-500 text-orange-500 group-hover:scale-110 transition-transform drop-shadow-[0_1px_3px_rgba(249,115,22,0.4)]" />
+            </motion.div>
+            <span className="font-heading font-black tabular-nums text-zinc-950 dark:text-white">
+              {streakDays}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+              Streak
+            </span>
+
+            {/* Glowing ripple burst when checking progress */}
+            {isCheckingStreak && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0.8 }}
+                animate={{ scale: 2.5, opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="absolute inset-0 bg-orange-400/40 rounded-full pointer-events-none"
+              />
+            )}
+          </motion.button>
+
+          {/* Bell Button */}
+          <button className="w-9 h-9 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700 flex items-center justify-center relative shadow-xs shrink-0 cursor-pointer">
+            <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+            <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-rose-500" />
+          </button>
+        </div>
       </div>
+
+      {/* Daily Streak Motivational Encouragement Banner */}
+      <motion.div
+        whileTap={{ scale: 0.98 }}
+        onClick={handleCheckStreak}
+        className="mb-2 p-2.5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-transparent border border-orange-200/70 dark:border-orange-500/20 flex items-center justify-between cursor-pointer group hover:bg-orange-500/15 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="w-7 h-7 rounded-xl bg-orange-500/20 dark:bg-orange-500/30 flex items-center justify-center text-orange-500 shrink-0"
+          >
+            <Flame className="w-4 h-4 fill-orange-500" />
+          </motion.div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-zinc-900 dark:text-white">Daily Study Streak</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-orange-100 dark:bg-orange-950/80 text-orange-600 dark:text-orange-400 font-extrabold">
+                {streakDays} Days 🔥
+              </span>
+            </div>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              Tap to check your progress & boost habits
+            </p>
+          </div>
+        </div>
+        <span className="text-[11px] font-bold text-orange-500 group-hover:translate-x-0.5 transition-transform shrink-0">
+          Check →
+        </span>
+      </motion.div>
 
       {/* Main Title: Dashboard */}
       <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white my-2 font-heading">
@@ -720,6 +828,135 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
           </div>
         </div>
       )}
+
+      {/* Toast Notification for Streak Check */}
+      <AnimatePresence>
+        {streakToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            onAnimationComplete={() => {
+              setTimeout(() => setStreakToast(null), 2200);
+            }}
+            className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold shadow-xl flex items-center gap-2 border border-zinc-800 dark:border-zinc-200"
+          >
+            <Flame className="w-4 h-4 fill-orange-500 text-orange-500" />
+            <span>{streakToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Daily Streak Celebration & Progress Modal */}
+      <AnimatePresence>
+        {showStreakModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-sm rounded-[32px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl overflow-hidden text-center"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowStreakModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Glowing Background Radial */}
+              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-orange-500/20 via-amber-500/10 to-transparent pointer-events-none" />
+
+              {/* Animated Big Flame Mascot with Pulsing Glow */}
+              <div className="relative my-3 flex items-center justify-center">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.25, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute w-24 h-24 rounded-full bg-gradient-to-tr from-orange-500/30 to-amber-400/40 blur-xl"
+                />
+
+                <motion.div
+                  animate={{
+                    y: [-4, 4, -4],
+                    rotate: [-3, 3, -3],
+                    scale: [1, 1.08, 1],
+                  }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-18 h-18 rounded-3xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 flex items-center justify-center text-white shadow-xl shadow-orange-500/40 relative z-10"
+                >
+                  <Flame className="w-10 h-10 fill-white text-white drop-shadow-md" />
+                </motion.div>
+              </div>
+
+              {/* Title & Streak Counter */}
+              <h3 className="text-2xl font-black text-zinc-950 dark:text-white font-heading tracking-tight mt-3">
+                {streakDays} Day Streak!
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-[260px] mx-auto leading-relaxed">
+                Consistency is your superpower! You've checked in and studied 7 days in a row.
+              </p>
+
+              {/* 7-Day Weekly Streak Strip */}
+              <div className="mt-5 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60">
+                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2 text-left px-1">
+                  This Week's Study Habit
+                </span>
+                <div className="grid grid-cols-7 gap-1.5">
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-xs">
+                        <Flame className="w-4 h-4 fill-white" />
+                      </div>
+                      <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-300">{day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress Milestones */}
+              <div className="grid grid-cols-2 gap-2 mt-3 text-left">
+                <div className="p-3 rounded-2xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/40">
+                  <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 text-xs font-bold">
+                    <Zap className="w-3.5 h-3.5 fill-current" />
+                    <span>+50 Daily XP</span>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 block">
+                    Streak bonus claimed
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
+                  <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-bold">
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Next Milestone</span>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 block">
+                    10 Days (3 days left)
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={() => {
+                  setShowStreakModal(false);
+                  setActiveMobileScreen('quiz');
+                }}
+                className="w-full mt-4 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs shadow-lg shadow-orange-500/25 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Keep Learning Today</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
