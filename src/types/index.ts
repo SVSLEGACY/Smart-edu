@@ -80,6 +80,21 @@ export interface LessonChapter {
   subLessons: SubLesson[];
 }
 
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  category: 'python-core' | 'python-syntax' | 'algorithms' | 'streak' | 'mastery';
+  tier: 'bronze' | 'silver' | 'gold' | 'diamond';
+  icon: string;
+  color: string;
+  xpReward: number;
+  requiredTopicId?: string;
+  requiredTaskIds: string[];
+  courseId?: string;
+  courseTitle?: string;
+}
+
 export interface UpcomingLesson {
   id: string;
   number: string;

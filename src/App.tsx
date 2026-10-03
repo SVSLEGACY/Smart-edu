@@ -212,6 +212,7 @@ export default function App() {
                     onSelectLesson={handleSelectUpcomingLesson}
                     onLaunchQuiz={handleLaunchQuiz}
                     completedTaskIds={completedTaskIds}
+                    onCompleteTask={handleCompleteTask}
                     onResetTasks={handleResetTasks}
                   />
                 </motion.div>

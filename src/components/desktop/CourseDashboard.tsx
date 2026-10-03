@@ -5,6 +5,8 @@ import { Course, CategoryFilter, UpcomingLesson } from '../../types';
 import { Avatar, AvatarStack } from '../common/Avatar';
 import { pythonTopicQuizzes } from '../../data/pythonQuizzes';
 import { TopicQuizModal } from './TopicQuizModal';
+import { Badges } from './Badges';
+import { allBadges, calculateBadgeProgress } from '../../data/badgesData';
 
 interface CourseDashboardProps {
   courses: Course[];
@@ -14,6 +16,7 @@ interface CourseDashboardProps {
   onSelectLesson?: (lesson: UpcomingLesson) => void;
   onLaunchQuiz?: (courseId: string) => void;
   completedTaskIds?: string[];
+  onCompleteTask?: (taskId: string, courseId?: string) => void;
   onResetTasks?: () => void;
 }
 
@@ -25,6 +28,7 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
   onSelectLesson,
   onLaunchQuiz,
   completedTaskIds = [],
+  onCompleteTask,
   onResetTasks,
 }) => {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All courses');
@@ -86,6 +90,10 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
           {filteredCourses.map((course, idx) => {
             const isBookmarked = bookmarkedMap[course.id];
             const progressPercent = Math.round((course.progressLessons / course.totalLessons) * 100);
+            const associatedBadge = allBadges.find((b) => b.courseId === course.id);
+            const badgeProgress = associatedBadge
+              ? calculateBadgeProgress(associatedBadge, completedTaskIds)
+              : null;
 
             // Styling customizer for Python topics:
             // Card 1: Data Structures (Comprehensions) -> Warm Yellow #FED867
@@ -119,14 +127,21 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
               >
                 {/* Card Header: Category Tag, Quiz Badge & Bookmark */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tagBg}`}>
                       {course.category}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/10 dark:bg-white/15 text-zinc-900 dark:text-white flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-orange-500" />
-                      <span>{course.quizzesCount || 3} Quizzes</span>
-                    </span>
+                    {badgeProgress?.isUnlocked ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/25 text-zinc-950 dark:text-amber-200 border border-amber-500/40 flex items-center gap-1 shadow-2xs">
+                        <span>🏆</span>
+                        <span className="truncate max-w-[100px]">{badgeProgress.badge.name}</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/10 dark:bg-white/15 text-zinc-900 dark:text-white flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-orange-500" />
+                        <span>{course.quizzesCount || 4} Quizzes</span>
+                      </span>
+                    )}
                   </div>
 
                   <button
@@ -206,6 +221,15 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
           })}
         </AnimatePresence>
       </motion.section>
+
+      {/* Virtual Rewards & Skill Badges Component */}
+      <section className="w-full">
+        <Badges
+          completedTaskIds={completedTaskIds}
+          onLaunchQuiz={onLaunchQuiz}
+          onSelectCourse={onSelectCourse}
+        />
+      </section>
 
       {/* Bottom Row: "My next lessons" (Left) & Recommended Dark Card (Right) */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
@@ -385,6 +409,11 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
               pythonTopicQuizzes['course-python-slicing']
             }
             onClose={() => setSelectedQuizCourseId(null)}
+            onQuizCompleted={(_score) => {
+              if (selectedQuizCourseId && onCompleteTask) {
+                onCompleteTask(`topic-complete-${selectedQuizCourseId}`, selectedQuizCourseId);
+              }
+            }}
           />
         )}
       </AnimatePresence>

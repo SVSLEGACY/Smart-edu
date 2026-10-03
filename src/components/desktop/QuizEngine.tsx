@@ -611,6 +611,19 @@ export const QuizEngine: React.FC<QuizEngineProps> = ({
             </p>
           </div>
 
+          {/* Badge Achievement Reward Banner */}
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-medium max-w-md w-full">
+            <span className="text-xl">🏆</span>
+            <div className="text-left flex-1">
+              <span className="font-extrabold block text-zinc-900 dark:text-white">
+                Virtual Skill Reward Progress Credited!
+              </span>
+              <span className="text-zinc-600 dark:text-zinc-300">
+                Check your newly earned badge and XP on the Course Dashboard.
+              </span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-4 w-full max-w-md">
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60">
               <span className="text-[10px] font-bold text-zinc-400 uppercase">Score</span>
