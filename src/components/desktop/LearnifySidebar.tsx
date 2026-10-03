@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  Folder,
+  Code2,
   Edit3,
   MessageSquare,
   Bookmark,
   Settings,
   LogOut,
   Sparkles,
+  LayoutGrid,
 } from 'lucide-react';
 import { ScreenType } from '../../types';
 
@@ -21,63 +22,81 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
   onNavigate,
   onLogout,
 }) => {
-  const isCoursesActive = currentScreen === 'dashboard' || currentScreen === 'course-player';
-
   return (
     <aside className="w-16 sm:w-20 bg-[#1E1E21] text-zinc-400 flex flex-col items-center py-5 justify-between shrink-0 select-none z-30 border-r border-zinc-800/80">
       {/* Top Section */}
       <div className="flex flex-col items-center gap-4">
+        {/* Logo / Brand mark */}
+        <button
+          onClick={() => onNavigate('dashboard')}
+          aria-label="Re:Learn Platform"
+          className="w-10 h-10 rounded-2xl bg-[#FF533D] text-white flex items-center justify-center font-black text-sm shadow-md shadow-orange-500/30 cursor-pointer mb-2"
+        >
+          RE
+        </button>
+
         {/* Primary Nav Items */}
         <nav className="flex flex-col items-center gap-3">
-          {/* Courses Folder (Active in screenshot with yellow rounded squircle #FED867) */}
+          {/* Dashboard / All Topics */}
           <button
             onClick={() => onNavigate('dashboard')}
-            aria-label="Courses"
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-sm relative group ${
-              isCoursesActive
+            aria-label="Dashboard"
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-sm relative group ${
+              currentScreen === 'dashboard'
                 ? 'bg-[#FED867] text-zinc-950 font-bold shadow-amber-400/20 shadow-md scale-105'
                 : 'hover:bg-zinc-800/80 hover:text-zinc-100 text-zinc-400'
             }`}
+            title="Curriculum Dashboard"
           >
-            <Folder className={`w-6 h-6 ${isCoursesActive ? 'fill-zinc-950 text-zinc-950' : ''}`} />
-            <span className="sr-only">My Courses</span>
+            <LayoutGrid className="w-5 h-5" />
           </button>
 
-          {/* Python Quiz Engine */}
+          {/* Central Quiz Workspace */}
           <button
-            onClick={() => onNavigate('quiz-engine')}
-            aria-label="Python Quiz Engine"
+            onClick={() => onNavigate('quiz-workspace')}
+            aria-label="Quiz Workspace"
             className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
-              currentScreen === 'quiz-engine'
+              currentScreen === 'quiz-workspace'
                 ? 'bg-[#FF533D] text-white shadow-md shadow-orange-500/20 scale-105'
                 : ''
             }`}
-            title="Python Quiz Engine"
+            title="Adaptive Quiz Workspace"
           >
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <span className="sr-only">Python Quiz Engine</span>
+            <Code2 className="w-5 h-5" />
           </button>
 
-          {/* Notes / Notebook */}
+          {/* Quick Quiz Engine */}
+          <button
+            onClick={() => onNavigate('quiz-engine')}
+            aria-label="Python Topic Quizzes"
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
+              currentScreen === 'quiz-engine' ? 'bg-zinc-800 text-white' : ''
+            }`}
+            title="Topic Quiz Engine"
+          >
+            <Sparkles className="w-5 h-5 text-amber-400" />
+          </button>
+
+          {/* Notes / Misconception Log */}
           <button
             onClick={() => onNavigate('notes')}
-            aria-label="Notes"
+            aria-label="Misconception Notes"
             className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
               currentScreen === 'notes' ? 'bg-zinc-800 text-white' : ''
             }`}
-            title="Study Notes"
+            title="Misconception Notes"
           >
             <Edit3 className="w-5 h-5" />
           </button>
 
-          {/* Chat / Messages */}
+          {/* Discussion */}
           <button
             onClick={() => onNavigate('messages')}
-            aria-label="Messages"
+            aria-label="Discussions"
             className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
               currentScreen === 'messages' ? 'bg-zinc-800 text-white' : ''
             }`}
-            title="Discussion & Chat"
+            title="Tutor Q&A"
           >
             <MessageSquare className="w-5 h-5" />
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-orange-500" />
@@ -86,11 +105,11 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
           {/* Bookmarks */}
           <button
             onClick={() => onNavigate('bookmarks')}
-            aria-label="Saved Courses"
+            aria-label="Saved Challenges"
             className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
               currentScreen === 'bookmarks' ? 'bg-zinc-800 text-white' : ''
             }`}
-            title="Saved & Bookmarked"
+            title="Saved Problems"
           >
             <Bookmark className="w-5 h-5" />
           </button>

@@ -1,6 +1,6 @@
 {
   "name": "RE:LEARN - Interactive Learning Platform",
-  "description": "An interactive learning experience featuring course dashboards, video lectures, practice quizzes, and study schedules with smooth transitions and dark mode.",
+  "description": "An AI-powered adaptive learning platform for Python programming featuring misconception diagnostics, targeted interventions, Monaco code editing, and difficulty levels.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

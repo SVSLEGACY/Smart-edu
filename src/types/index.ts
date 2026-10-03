@@ -1,6 +1,8 @@
-export type ScreenType = 'dashboard' | 'course-player' | 'quiz-engine' | 'notes' | 'messages' | 'bookmarks' | 'settings';
+export type ScreenType = 'dashboard' | 'quiz-workspace' | 'quiz-engine' | 'notes' | 'messages' | 'bookmarks' | 'settings';
 
-export type CategoryFilter = 'All courses' | 'Core & Slicing' | 'Functions & Scope' | 'Data Structures';
+export type CategoryFilter = 'All topics' | 'Core & Slicing' | 'Functions & Scope' | 'Data Structures';
+
+export type DifficultyLevel = 'Easy' | 'Medium' | 'Difficult';
 
 export interface UserProfile {
   name: string;
@@ -18,6 +20,7 @@ export interface TopicQuizQuestion {
   id: string;
   question: string;
   type: 'code' | 'choice';
+  difficulty?: DifficultyLevel;
   codeSnippet?: string;
   options?: string[];
   correctIndex?: number;
@@ -64,22 +67,6 @@ export interface Course {
   description: string;
 }
 
-export interface SubLesson {
-  id: string;
-  title: string;
-  duration: string;
-  durationMinutes: number;
-  isCompleted?: boolean;
-}
-
-export interface LessonChapter {
-  id: string;
-  number: string;
-  title: string;
-  duration: string;
-  subLessons: SubLesson[];
-}
-
 export interface Badge {
   id: string;
   name: string;
@@ -104,12 +91,8 @@ export interface UpcomingLesson {
   teacherAvatar: string;
   duration: string;
   courseId: string;
-}
-
-export interface VideoTimestamp {
-  timeSeconds: number;
-  displayTime: string;
-  title: string;
+  difficulty?: DifficultyLevel;
+  isCompleted?: boolean;
 }
 
 export interface QuizQuestion {
@@ -119,6 +102,7 @@ export interface QuizQuestion {
   acceptableAnswers: string[];
   hint: string;
   progressPercent: number;
+  difficulty?: DifficultyLevel;
 }
 
 export interface ScheduleItem {

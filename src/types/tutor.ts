@@ -1,3 +1,5 @@
+import { DifficultyLevel } from './index';
+
 export interface DiagnosticPayload {
   current_concept: string;
   original_question: string;
@@ -7,6 +9,7 @@ export interface DiagnosticPayload {
   mastery_target: number;
   misconception_history: string[];
   concepts_remaining: string[];
+  difficulty?: DifficultyLevel;
 }
 
 export interface DiagnosticResult {
@@ -18,6 +21,8 @@ export interface DiagnosticResult {
   hint_level: 0 | 1 | 2 | 3;
   next_action: 'advance' | 'reassess' | 'review_prerequisite';
   next_question: string;
+  reassessment_question?: string;
+  difficulty?: DifficultyLevel;
   mastery_streak: number;
   loop_status: 'continue' | 'complete';
 }
@@ -32,6 +37,7 @@ export interface TutorSessionState {
   mastery_target: number;
   submissions_count: number;
   is_complete: boolean;
+  difficulty: DifficultyLevel;
 }
 
 export interface ConceptCurriculum {
@@ -42,6 +48,7 @@ export interface ConceptCurriculum {
   firstQuestion: string;
   starterCode: string;
   prerequisite: string;
+  difficulty?: DifficultyLevel;
   sampleMisconceptions: {
     label: string;
     code: string;

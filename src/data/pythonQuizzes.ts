@@ -9,11 +9,10 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
       {
         id: 'q-slice-01',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'Exclusive Stop Boundary',
         question: 'Given items = [10, 20, 30, 40, 50], what is the exact output of items[1:3]?',
-        codeSnippet: `items = [10, 20, 30, 40, 50]
-result = items[1:3]
-print(result)`,
+        codeSnippet: `items = [10, 20, 30, 40, 50]\nresult = items[1:3]\nprint(result)`,
         options: ['[20, 30]', '[20, 30, 40]', '[10, 20, 30]', '[30, 40]'],
         correctIndex: 0,
         explanation: 'In Python slicing list[start:stop], the stop index is strictly exclusive. Indices 1 and 2 are retrieved, giving [20, 30].',
@@ -23,11 +22,10 @@ print(result)`,
       {
         id: 'q-slice-02',
         type: 'choice',
+        difficulty: 'Medium',
         concept: 'Center Window Slicing',
         question: 'Which slice expression correctly extracts the middle 3 elements from an odd-length list with len(items) >= 3?',
-        codeSnippet: `mid = len(items) // 2
-# Goal: extract items[mid-1], items[mid], items[mid+1]
-middle_elements = items[???]`,
+        codeSnippet: `mid = len(items) // 2\n# Goal: extract items[mid-1], items[mid], items[mid+1]\nmiddle_elements = items[???]`,
         options: [
           'items[mid - 1 : mid + 2]',
           'items[mid - 1 : mid + 1]',
@@ -42,11 +40,10 @@ middle_elements = items[???]`,
       {
         id: 'q-slice-03',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'Negative Step Reversal',
         question: 'What is the output of the string slice "python"[::-1]?',
-        codeSnippet: `word = "python"
-reversed_word = word[::-1]
-print(reversed_word)`,
+        codeSnippet: `word = "python"\nreversed_word = word[::-1]\nprint(reversed_word)`,
         options: ['"nohtyp"', '"python"', 'IndexError: string index out of range', '"" (empty string)'],
         correctIndex: 0,
         explanation: 'A step of -1 without start or stop indices traverses the sequence backwards from end to start.',
@@ -56,10 +53,10 @@ print(reversed_word)`,
       {
         id: 'q-slice-04',
         type: 'choice',
+        difficulty: 'Difficult',
         concept: 'Safe Slice Out-of-Bounds Behavior',
         question: 'What is the result of evaluating items[5:10] when items = [1, 2, 3]?',
-        codeSnippet: `items = [1, 2, 3]
-print(items[5:10])`,
+        codeSnippet: `items = [1, 2, 3]\nprint(items[5:10])`,
         options: [
           '[] (empty list)',
           'IndexError: list index out of range',
@@ -71,6 +68,17 @@ print(items[5:10])`,
         commonMisconception: 'Expecting slices that exceed length to raise IndexError like item indexing.',
         solutionHint: 'Python slicing never raises IndexError for out-of-bounds start or stop.',
       },
+      {
+        id: 'q-slice-05',
+        type: 'code',
+        difficulty: 'Difficult',
+        concept: 'Step Slicing Windowing',
+        question: 'Write a function `even_index_reverse(lst)` that returns elements from even indices of `lst` in reversed order.',
+        starterCode: `def even_index_reverse(lst):\n    # Return items at even indices in reversed order\n    return lst[::2][::-1]\n`,
+        explanation: 'Taking `lst[::2]` extracts elements at even indices (0, 2, 4...), and chaining `[::-1]` or computing the slice bounds in reverse yields the required sequence.',
+        commonMisconception: 'Failing to compose slicing steps or index arithmetic correctly.',
+        solutionHint: 'You can extract every 2nd element and reverse it.',
+      },
     ],
   },
   'course-python-functions': {
@@ -81,14 +89,10 @@ print(items[5:10])`,
       {
         id: 'q-func-01',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'Default Mutable Argument',
         question: 'If def add_item(val, target=[]) is called twice as add_item(1) then add_item(2), what is returned on the second call?',
-        codeSnippet: `def add_item(val, target=[]):
-    target.append(val)
-    return target
-
-add_item(1)
-print(add_item(2))`,
+        codeSnippet: `def add_item(val, target=[]):\n    target.append(val)\n    return target\n\nadd_item(1)\nprint(add_item(2))`,
         options: [
           '[1, 2] (both items in the shared default list)',
           '[2] (a fresh list is created)',
@@ -103,6 +107,7 @@ print(add_item(2))`,
       {
         id: 'q-func-02',
         type: 'choice',
+        difficulty: 'Medium',
         concept: 'Sentinel Default Pattern',
         question: 'What is the idiomatic Python pattern to avoid shared state mutations across function calls?',
         codeSnippet: `# Which implementation ensures an isolated list each call?`,
@@ -120,14 +125,10 @@ print(add_item(2))`,
       {
         id: 'q-func-03',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'LEGB Scope Resolution',
         question: 'In which order does Python resolve variable names according to the LEGB rule?',
-        codeSnippet: `x = "global"
-def outer():
-    x = "enclosing"
-    def inner():
-        x = "local"
-        return x`,
+        codeSnippet: `x = "global"\ndef outer():\n    x = "enclosing"\n    def inner():\n        x = "local"\n        return x`,
         options: [
           'Local -> Enclosing -> Global -> Built-in',
           'Global -> Local -> Enclosing -> Built-in',
@@ -142,10 +143,10 @@ def outer():
       {
         id: 'q-func-04',
         type: 'choice',
+        difficulty: 'Difficult',
         concept: 'Late Binding in Closures',
         question: 'What is the output of invoking the functions generated in this loop?',
-        codeSnippet: `funcs = [lambda: i for i in range(3)]
-print([f() for f in funcs])`,
+        codeSnippet: `funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])`,
         options: [
           '[2, 2, 2]',
           '[0, 1, 2]',
@@ -167,10 +168,10 @@ print([f() for f in funcs])`,
       {
         id: 'q-comp-01',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'Dictionary Comprehension Filtering',
         question: 'What is returned by {x: x**2 for x in [1, 2, 3, 4] if x % 2 != 0}?',
-        codeSnippet: `result = {x: x**2 for x in [1, 2, 3, 4] if x % 2 != 0}
-print(result)`,
+        codeSnippet: `result = {x: x**2 for x in [1, 2, 3, 4] if x % 2 != 0}\nprint(result)`,
         options: ['{1: 1, 3: 9}', '[1, 9]', '{1, 9}', '{2: 4, 4: 16}'],
         correctIndex: 0,
         explanation: 'The filter x % 2 != 0 keeps only 1 and 3. The dict comprehension pairs 1: 1**2 and 3: 3**2.',
@@ -180,11 +181,10 @@ print(result)`,
       {
         id: 'q-comp-02',
         type: 'choice',
+        difficulty: 'Medium',
         concept: 'Inverting Dictionaries with .items()',
         question: 'Which comprehension correctly inverts a dictionary mapping (swapping keys and values)?',
-        codeSnippet: `original = {'a': 1, 'b': 2, 'c': 3}
-# Desired output: {1: 'a', 2: 'b', 3: 'c'}
-inverted = ???`,
+        codeSnippet: `original = {'a': 1, 'b': 2, 'c': 3}\n# Desired output: {1: 'a', 2: 'b', 3: 'c'}\ninverted = ???`,
         options: [
           '{v: k for k, v in original.items()}',
           '{k: v for k, v in original}',
@@ -199,10 +199,10 @@ inverted = ???`,
       {
         id: 'q-comp-03',
         type: 'choice',
+        difficulty: 'Medium',
         concept: 'Generators vs Lists',
         question: 'What is the primary memory advantage of a generator expression (x*2 for x in data) over a list comprehension [x*2 for x in data]?',
-        codeSnippet: `gen = (x * 2 for x in range(10_000_000))
-lst = [x * 2 for x in range(10_000_000)]`,
+        codeSnippet: `gen = (x * 2 for x in range(10_000_000))\nlst = [x * 2 for x in range(10_000_000)]`,
         options: [
           'It yields elements one at a time on demand without storing the full sequence in RAM',
           'It automatically compiles down to GPU instructions',
@@ -217,10 +217,10 @@ lst = [x * 2 for x in range(10_000_000)]`,
       {
         id: 'q-comp-04',
         type: 'choice',
+        difficulty: 'Difficult',
         concept: 'Set Comprehension Deduplication',
         question: 'What data structure and value is produced by {x for x in [1, 2, 2, 3, 3, 3]}?',
-        codeSnippet: `result = {x for x in [1, 2, 2, 3, 3, 3]}
-print(type(result), result)`,
+        codeSnippet: `result = {x for x in [1, 2, 2, 3, 3, 3]}\nprint(type(result), result)`,
         options: [
           '<class \'set\'> {1, 2, 3}',
           '<class \'dict\'> {1: None, 2: None, 3: None}',
@@ -242,11 +242,10 @@ print(type(result), result)`,
       {
         id: 'q-algo-01',
         type: 'choice',
+        difficulty: 'Easy',
         concept: 'Recursion Termination',
         question: 'What error is raised if a recursive Python function exceeds the call stack depth without hitting a base case?',
-        codeSnippet: `def recurse():
-    return recurse()
-recurse()`,
+        codeSnippet: `def recurse():\n    return recurse()\nrecurse()`,
         options: [
           'RecursionError (maximum recursion depth exceeded)',
           'StackMemoryError',
@@ -261,11 +260,10 @@ recurse()`,
       {
         id: 'q-algo-02',
         type: 'choice',
+        difficulty: 'Medium',
         concept: 'Recursive Digit Sum Base Case',
         question: 'Which recursive implementation correctly computes the sum of digits of non-negative integer n?',
-        codeSnippet: `# Example: sum_digits(245) -> 2 + 4 + 5 = 11
-def sum_digits(n):
-    # Which base case and reduction step is correct?`,
+        codeSnippet: `# Example: sum_digits(245) -> 2 + 4 + 5 = 11\ndef sum_digits(n):\n    # Which base case and reduction step is correct?`,
         options: [
           'if n < 10: return n\nreturn (n % 10) + sum_digits(n // 10)',
           'if n == 0: return 0\nreturn (n / 10) + sum_digits(n % 10)',
@@ -280,14 +278,10 @@ def sum_digits(n):
       {
         id: 'q-algo-03',
         type: 'choice',
+        difficulty: 'Difficult',
         concept: 'Memoization with lru_cache',
         question: 'Which standard library decorator is typically used to cache recursive function calls in Python?',
-        codeSnippet: `from functools import lru_cache
-
-@lru_cache(maxsize=None)
-def fib(n):
-    if n < 2: return n
-    return fib(n - 1) + fib(n - 2)`,
+        codeSnippet: `from functools import lru_cache\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2: return n\n    return fib(n - 1) + fib(n - 2)`,
         options: [
           '@functools.lru_cache',
           '@itertools.memoize',
@@ -302,6 +296,7 @@ def fib(n):
       {
         id: 'q-algo-04',
         type: 'choice',
+        difficulty: 'Difficult',
         concept: 'Call Stack Frame Unwinding',
         question: 'What happens to Python call stack frames when a recursive function hits its base case?',
         codeSnippet: `# Phase: Recursive Unwinding`,
