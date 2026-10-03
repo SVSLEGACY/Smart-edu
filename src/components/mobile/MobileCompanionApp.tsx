@@ -18,12 +18,21 @@ import {
   Flame,
   Zap,
   X,
+  GripVertical,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  Check,
+  Laptop,
+  LayoutGrid,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Avatar } from '../common/Avatar';
+import { ThemeToggle } from '../common/ThemeToggle';
 import { MascotRobot } from '../common/MascotRobot';
 import { BusinessAnalyticsIllustration } from '../common/BusinessAnalyticsIllustration';
 import { quizQuestions, scheduleItems, mobileUser } from '../../data/mockData';
+import { ScheduleItem } from '../../types';
 
 interface MobileCompanionAppProps {
   onBackToDesktop?: () => void;
@@ -47,9 +56,73 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   const [activeSubject, setActiveSubject] = useState('Geographic');
   const [mascotStatus, setMascotStatus] = useState<'idle' | 'celebrating' | 'thinking'>('idle');
 
-  // Schedule state
+  // Schedule state & Reorderable List (Persisted in Local Storage)
   const [selectedDay, setSelectedDay] = useState<number>(14);
   const [progressToday, setProgressToday] = useState<number>(58);
+
+  const [scheduleList, setScheduleList] = useState<ScheduleItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('learnify-schedule-tasks');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {
+          console.error('Error loading schedule from localStorage', e);
+        }
+      }
+    }
+    return scheduleItems;
+  });
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [scheduleFeedbackToast, setScheduleFeedbackToast] = useState<string | null>(null);
+
+  const saveScheduleToStorage = (newList: ScheduleItem[]) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('learnify-schedule-tasks', JSON.stringify(newList));
+    }
+    setScheduleFeedbackToast('✓ Schedule reordered and saved!');
+    setTimeout(() => {
+      setScheduleFeedbackToast(null);
+    }, 2200);
+  };
+
+  const reorderScheduleTasks = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= scheduleList.length ||
+      toIndex >= scheduleList.length
+    )
+      return;
+    const updated = [...scheduleList];
+    const [movedItem] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, movedItem);
+    setScheduleList(updated);
+    saveScheduleToStorage(updated);
+  };
+
+  const moveTaskUp = (index: number) => {
+    if (index > 0) reorderScheduleTasks(index, index - 1);
+  };
+
+  const moveTaskDown = (index: number) => {
+    if (index < scheduleList.length - 1) reorderScheduleTasks(index, index + 1);
+  };
+
+  const resetScheduleToDefault = () => {
+    setScheduleList(scheduleItems);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('learnify-schedule-tasks');
+    }
+    setScheduleFeedbackToast('✓ Schedule reset to default!');
+    setTimeout(() => {
+      setScheduleFeedbackToast(null);
+    }, 2200);
+  };
 
   // Daily Streak State & Animation
   const [streakDays, setStreakDays] = useState<number>(7);
@@ -594,62 +667,145 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
         })}
       </div>
 
-      {/* My Schedule Title & Timeline */}
-      <div className="flex items-center justify-between mt-2 mb-1">
-        <h3 className="text-lg font-black text-zinc-950 dark:text-white font-heading">
-          My Schedule
-        </h3>
-        <button className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+      {/* My Schedule Title & Drag-and-Drop Action Header */}
+      <div className="flex items-center justify-between mt-3 mb-1.5">
+        <div>
+          <h3 className="text-base font-black text-zinc-950 dark:text-white font-heading">
+            My Schedule
+          </h3>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
+            Drag cards or tap ↑↓ to reorder
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={resetScheduleToDefault}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+            title="Reset schedule to default order"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
 
-      {/* Visual Timeline (8:00, 10:00, 12:00) */}
-      <div className="flex flex-col gap-3 my-2 text-xs">
-        {/* 8:00 Slot */}
-        <div className="flex items-start gap-3">
-          <span className="w-10 text-zinc-400 font-mono text-[11px] pt-1">8:00</span>
-          <div className="flex-1 flex flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FEF9C3] text-amber-900 border border-amber-200 shadow-xs">
-              <span className="text-xs">✏️</span>
-              <span className="font-bold">Writing</span>
-              <span className="text-[10px] text-amber-700 font-mono">8:00-8:30</span>
-              <ExternalLink className="w-3 h-3 text-amber-700 ml-1" />
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FCE7F3] text-pink-900 border border-pink-200 shadow-xs">
-              <span className="text-xs">📐</span>
-              <span className="font-bold">Math</span>
-              <span className="text-[10px] text-pink-700 font-mono">8:30-9:00</span>
-              <ExternalLink className="w-3 h-3 text-pink-700 ml-1" />
-            </div>
-          </div>
-        </div>
+      {/* Drag & Drop Reorderable Task List */}
+      <div className="flex flex-col gap-2 my-1.5">
+        {scheduleList.map((task, index) => {
+          const isDragging = draggedIndex === index;
+          const isOver = dragOverIndex === index;
 
-        {/* 10:00 Slot */}
-        <div className="flex items-start gap-3">
-          <span className="w-10 text-zinc-400 font-mono text-[11px] pt-1">10:00</span>
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EDE9FE] text-purple-900 border border-purple-200 shadow-xs">
-              <span className="text-xs">🧪</span>
-              <span className="font-bold">Chemistry</span>
-              <span className="text-[10px] text-purple-700 font-mono">10:00-10:30</span>
-              <ExternalLink className="w-3 h-3 text-purple-700 ml-1" />
-            </div>
-          </div>
-        </div>
+          return (
+            <div
+              key={task.id}
+              draggable={true}
+              onDragStart={(e: React.DragEvent) => {
+                e.dataTransfer.setData('text/plain', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+                setDraggedIndex(index);
+              }}
+              onDragOver={(e: React.DragEvent) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (dragOverIndex !== index) {
+                  setDragOverIndex(index);
+                }
+              }}
+              onDragLeave={() => {
+                if (dragOverIndex === index) setDragOverIndex(null);
+              }}
+              onDrop={(e: React.DragEvent) => {
+                e.preventDefault();
+                const sourceIdxStr = e.dataTransfer.getData('text/plain');
+                const sourceIdx = sourceIdxStr ? parseInt(sourceIdxStr, 10) : draggedIndex;
+                if (sourceIdx !== null && sourceIdx !== undefined && sourceIdx !== index && !isNaN(sourceIdx)) {
+                  reorderScheduleTasks(sourceIdx, index);
+                }
+                setDraggedIndex(null);
+                setDragOverIndex(null);
+              }}
+              onDragEnd={() => {
+                setDraggedIndex(null);
+                setDragOverIndex(null);
+              }}
+              className={`relative p-2.5 rounded-2xl border transition-all duration-200 select-none ${
+                isDragging
+                  ? 'opacity-35 scale-95 border-dashed border-orange-500 bg-orange-50 dark:bg-orange-950/20'
+                  : isOver
+                  ? 'border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 scale-[1.02] shadow-md ring-2 ring-orange-500/20'
+                  : 'border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-800/90 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                {/* Left: Drag Handle, Time, and Subject Pill */}
+                <div className="flex items-center gap-2 min-w-0">
+                  {/* Grip Vertical Drag Handle */}
+                  <div
+                    className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-colors shrink-0"
+                    title="Drag to reorder"
+                  >
+                    <GripVertical className="w-3.5 h-3.5" />
+                  </div>
 
-        {/* 12:00 Slot */}
-        <div className="flex items-start gap-3">
-          <span className="w-10 text-zinc-400 font-mono text-[11px] pt-1">12:00</span>
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFEDD5] text-orange-900 border border-orange-200 shadow-xs">
-              <span className="text-xs">💻</span>
-              <span className="font-bold">Developing</span>
-              <span className="text-[10px] text-orange-700 font-mono">12:00-12:30</span>
-              <ExternalLink className="w-3 h-3 text-orange-700 ml-1" />
+                  {/* Time slot */}
+                  <span className="text-[11px] font-mono font-bold text-zinc-400 dark:text-zinc-500 tabular-nums shrink-0">
+                    {task.timeSlot}
+                  </span>
+
+                  {/* Subject badge */}
+                  <div
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 shadow-xs border ${task.colorClass} ${task.darkColorClass}`}
+                  >
+                    <span>{task.icon || '📚'}</span>
+                    <span>{task.subject}</span>
+                  </div>
+                </div>
+
+                {/* Right: Time Range + Touch Up/Down Reorder Controls */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] font-mono text-zinc-400 tabular-nums hidden xs:inline">
+                    {task.timeRange}
+                  </span>
+
+                  <div className="flex items-center bg-zinc-100 dark:bg-zinc-700/60 rounded-lg p-0.5">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveTaskUp(index);
+                      }}
+                      className="p-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                      title="Move task earlier in day"
+                    >
+                      <ArrowUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === scheduleList.length - 1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveTaskDown(index);
+                      }}
+                      className="p-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                      title="Move task later in day"
+                    >
+                      <ArrowDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Note / Subtitle */}
+              {task.note && (
+                <div className="pl-6 pt-1 text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                  {task.note}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* Bottom Quick Cards: Developing 15 min & Math 12 min */}
@@ -684,150 +840,150 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   );
 
   return (
-    <div className="flex-1 p-4 sm:p-8 flex flex-col items-center justify-center min-h-[calc(100vh-4.5rem)] max-w-7xl mx-auto w-full">
-      {/* Sub-header controls for mobile companion preview */}
-      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#FBFBFC] dark:bg-[#18181B] text-zinc-900 dark:text-zinc-100 flex flex-col justify-between w-full max-w-lg mx-auto sm:border-x border-zinc-200/80 dark:border-zinc-800 shadow-2xl relative transition-colors duration-200">
+      {/* Top Mobile Bar */}
+      <header className="px-4 py-3 flex items-center justify-between border-b border-zinc-200/60 dark:border-zinc-800/80 bg-white/85 dark:bg-[#18181B]/85 backdrop-blur-md sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-extrabold tracking-tight">
+            <span className="text-[#FF533D]">Learn</span>
+            <span className="text-zinc-900 dark:text-white">ify</span>
+          </span>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+            Mobile
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {onBackToDesktop && (
             <button
               onClick={onBackToDesktop}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold hover:bg-zinc-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
+              title="Switch to Desktop / Tablet view"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Back to Learnify Web</span>
+              <Laptop className="w-3.5 h-3.5" />
+              <span className="text-[11px] hidden xs:inline">Desktop</span>
             </button>
           )}
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-            <span>Len's Mobile Companion App</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300 font-semibold">
-              Live Preview
-            </span>
-          </h2>
         </div>
+      </header>
 
-        {/* View Style Switcher: Single Interactive Phone vs All Three Side-by-Side */}
-        <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
-          <button
-            onClick={() => setViewStyle('single-phone')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              viewStyle === 'single-phone'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+      {/* Main Screen Content */}
+      <main className="flex-1 flex flex-col pb-20">
+        <AnimatePresence mode="wait">
+          {activeMobileScreen === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.18 }}
+              className="flex-1"
+            >
+              {renderDashboardScreen()}
+            </motion.div>
+          )}
+
+          {activeMobileScreen === 'quiz' && (
+            <motion.div
+              key="quiz"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.18 }}
+              className="flex-1"
+            >
+              {renderQuizScreen()}
+            </motion.div>
+          )}
+
+          {activeMobileScreen === 'schedule' && (
+            <motion.div
+              key="schedule"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.18 }}
+              className="flex-1"
+            >
+              {renderScheduleScreen()}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Fixed Bottom Mobile Navigation Bar */}
+      <nav className="fixed bottom-0 inset-x-0 max-w-lg mx-auto bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800 py-2 px-6 flex items-center justify-around z-40 shadow-lg">
+        <button
+          onClick={() => setActiveMobileScreen('dashboard')}
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
+            activeMobileScreen === 'dashboard'
+              ? 'text-[#FF533D] font-bold'
+              : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          <div
+            className={`p-1.5 rounded-xl transition-all ${
+              activeMobileScreen === 'dashboard' ? 'bg-orange-100 dark:bg-orange-950/60 scale-105' : ''
             }`}
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Interactive Phone</span>
-          </button>
+            <LayoutGrid className="w-5 h-5" />
+          </div>
+          <span className="text-[10px]">Dashboard</span>
+        </button>
 
-          <button
-            onClick={() => setViewStyle('all-three')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              viewStyle === 'all-three'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+        <button
+          onClick={() => setActiveMobileScreen('quiz')}
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
+            activeMobileScreen === 'quiz'
+              ? 'text-[#FF533D] font-bold'
+              : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          <div
+            className={`p-1.5 rounded-xl transition-all ${
+              activeMobileScreen === 'quiz' ? 'bg-orange-100 dark:bg-orange-950/60 scale-105' : ''
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>3 Screens (Side-by-Side)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Screen Render Mode */}
-      {viewStyle === 'single-phone' ? (
-        <div className="flex flex-col items-center">
-          {/* Navigation Pill tabs between the 3 mobile screens */}
-          <div className="flex items-center gap-2 mb-4 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-full border border-zinc-200 dark:border-zinc-700">
-            <button
-              onClick={() => setActiveMobileScreen('dashboard')}
-              className={`px-4 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMobileScreen === 'dashboard'
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              1. Dashboard
-            </button>
-            <button
-              onClick={() => setActiveMobileScreen('quiz')}
-              className={`px-4 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMobileScreen === 'quiz'
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              2. Interactive Quiz
-            </button>
-            <button
-              onClick={() => setActiveMobileScreen('schedule')}
-              className={`px-4 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMobileScreen === 'schedule'
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              3. Schedule
-            </button>
+            <Sparkles className="w-5 h-5" />
           </div>
+          <span className="text-[10px]">Practice</span>
+        </button>
 
-          {/* Physical Phone Mockup Container */}
-          <div className="relative w-[340px] sm:w-[380px] h-[720px] rounded-[48px] bg-zinc-900 p-3 shadow-2xl border-4 border-zinc-800">
-            {/* Phone Speaker Notch */}
-            <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-4 bg-zinc-800 rounded-full z-40" />
+        <button
+          onClick={() => setActiveMobileScreen('schedule')}
+          className={`flex flex-col items-center gap-1 transition-colors cursor-pointer ${
+            activeMobileScreen === 'schedule'
+              ? 'text-[#FF533D] font-bold'
+              : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          <div
+            className={`p-1.5 rounded-xl transition-all ${
+              activeMobileScreen === 'schedule' ? 'bg-orange-100 dark:bg-orange-950/60 scale-105' : ''
+            }`}
+          >
+            <CalendarIcon className="w-5 h-5" />
+          </div>
+          <span className="text-[10px]">Schedule</span>
+        </button>
+      </nav>
 
-            {/* Inner Screen */}
-            <div className="w-full h-full rounded-[38px] overflow-hidden relative shadow-inner">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeMobileScreen}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                  className="w-full h-full"
-                >
-                  {activeMobileScreen === 'dashboard' && renderDashboardScreen()}
-                  {activeMobileScreen === 'quiz' && renderQuizScreen()}
-                  {activeMobileScreen === 'schedule' && renderScheduleScreen()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Side by Side 3 Screens Gallery matching Image 2 & 3 */
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full justify-items-center py-4">
-          {/* Screen 1: Dashboard */}
-          <div className="flex flex-col items-center">
-            <span className="text-xs font-bold text-zinc-500 mb-2">Screen 1: Dashboard</span>
-            <div className="w-[320px] sm:w-[360px] h-[680px] rounded-[44px] bg-zinc-900 p-2.5 shadow-2xl border-4 border-zinc-800">
-              <div className="w-full h-full rounded-[34px] overflow-hidden relative shadow-inner">
-                {renderDashboardScreen()}
-              </div>
-            </div>
-          </div>
-
-          {/* Screen 2: Interactive Quiz */}
-          <div className="flex flex-col items-center">
-            <span className="text-xs font-bold text-zinc-500 mb-2">Screen 2: Interactive Quiz</span>
-            <div className="w-[320px] sm:w-[360px] h-[680px] rounded-[44px] bg-zinc-900 p-2.5 shadow-2xl border-4 border-zinc-800">
-              <div className="w-full h-full rounded-[34px] overflow-hidden relative shadow-inner">
-                {renderQuizScreen()}
-              </div>
-            </div>
-          </div>
-
-          {/* Screen 3: Schedule */}
-          <div className="flex flex-col items-center">
-            <span className="text-xs font-bold text-zinc-500 mb-2">Screen 3: Daily Schedule</span>
-            <div className="w-[320px] sm:w-[360px] h-[680px] rounded-[44px] bg-zinc-900 p-2.5 shadow-2xl border-4 border-zinc-800">
-              <div className="w-full h-full rounded-[34px] overflow-hidden relative shadow-inner">
-                {renderScheduleScreen()}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Toast Notification for Schedule Reorder */}
+      <AnimatePresence>
+        {scheduleFeedbackToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold shadow-xl flex items-center gap-2 border border-zinc-800 dark:border-zinc-200"
+          >
+            <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+            <span>{scheduleFeedbackToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Toast Notification for Streak Check */}
       <AnimatePresence>

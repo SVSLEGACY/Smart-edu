@@ -88,4 +88,6 @@ export interface ScheduleItem {
   colorClass: string;
   darkColorClass: string;
   duration: string;
+  icon?: string;
+  note?: string;
 }
