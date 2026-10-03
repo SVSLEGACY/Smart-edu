@@ -96,7 +96,7 @@ export async function diagnoseStudentSubmission(
  * Built-in diagnostic engine implementation for deterministic, instant diagnosis
  * using the empirical CSV dataset and difficulty calibration.
  */
-function localDiagnosticEngine(payload: DiagnosticPayload): DiagnosticResult {
+export function localDiagnosticEngine(payload: DiagnosticPayload): DiagnosticResult {
   const {
     current_concept,
     original_question,
