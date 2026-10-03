@@ -8,6 +8,7 @@ export interface StudentAccount {
   department: string;
   batch: string;
   initials: string;
+  streak: number;
 }
 
 export const registeredStudents: StudentAccount[] = [
@@ -19,6 +20,7 @@ export const registeredStudents: StudentAccount[] = [
     department: 'Computer Science & Engineering',
     batch: 'Class of 2026',
     initials: 'KV',
+    streak: 8,
   },
   {
     rollNumber: 'PY-2026-108',
@@ -28,6 +30,7 @@ export const registeredStudents: StudentAccount[] = [
     department: 'AI & Data Engineering',
     batch: 'Class of 2026',
     initials: 'AS',
+    streak: 12,
   },
   {
     rollNumber: 'PY-2026-077',
@@ -37,6 +40,7 @@ export const registeredStudents: StudentAccount[] = [
     department: 'Software Architecture',
     batch: 'Class of 2027',
     initials: 'EV',
+    streak: 5,
   },
   {
     rollNumber: 'PY-2026-015',
@@ -46,6 +50,7 @@ export const registeredStudents: StudentAccount[] = [
     department: 'Distributed Systems',
     batch: 'Class of 2025',
     initials: 'MC',
+    streak: 14,
   },
 ];
 
@@ -126,6 +131,7 @@ export function authenticateStudentCredentials(
         batch: matched.batch,
         initials: matched.initials,
         notificationsCount: 3,
+        streak: matched.streak || 5,
       },
     };
   }
@@ -144,6 +150,7 @@ export function authenticateStudentCredentials(
       batch: 'Class of 2026',
       initials,
       notificationsCount: 1,
+      streak: 3,
     },
   };
 }

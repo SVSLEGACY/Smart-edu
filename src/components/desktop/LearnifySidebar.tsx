@@ -4,10 +4,8 @@ import {
   Edit3,
   MessageSquare,
   Bookmark,
-  Headphones,
   Settings,
   LogOut,
-  LayoutGrid,
   Sparkles,
 } from 'lucide-react';
 import { ScreenType } from '../../types';
@@ -27,22 +25,8 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
 
   return (
     <aside className="w-16 sm:w-20 bg-[#1E1E21] text-zinc-400 flex flex-col items-center py-5 justify-between shrink-0 select-none z-30 border-r border-zinc-800/80">
-      {/* Top Brand / Grid Logo */}
-      <div className="flex flex-col items-center gap-6">
-        <button
-          onClick={() => onNavigate('dashboard')}
-          className="w-11 h-11 rounded-2xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all cursor-pointer"
-          title="RE:LEARN Home"
-        >
-          {/* 4 dots grid icon from screenshot */}
-          <div className="grid grid-cols-2 gap-1.5 p-1">
-            <span className="w-2 h-2 rounded-full border-2 border-current" />
-            <span className="w-2 h-2 rounded-full border-2 border-current" />
-            <span className="w-2 h-2 rounded-full border-2 border-current" />
-            <span className="w-2 h-2 rounded-full border-2 border-current" />
-          </div>
-        </button>
-
+      {/* Top Section */}
+      <div className="flex flex-col items-center gap-4">
         {/* Primary Nav Items */}
         <nav className="flex flex-col items-center gap-3">
           {/* Courses Folder (Active in screenshot with yellow rounded squircle #FED867) */}
@@ -99,16 +83,6 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-orange-500" />
           </button>
 
-          {/* Widgets / 4 squares */}
-          <button
-            onClick={() => onNavigate('dashboard')}
-            aria-label="Overview"
-            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-            title="Widgets & Overview"
-          >
-            <LayoutGrid className="w-5 h-5" />
-          </button>
-
           {/* Bookmarks */}
           <button
             onClick={() => onNavigate('bookmarks')}
@@ -120,33 +94,23 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
           >
             <Bookmark className="w-5 h-5" />
           </button>
-
-          {/* Audio / Podcasts */}
-          <button
-            onClick={() => onNavigate('dashboard')}
-            aria-label="Audio Learning"
-            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-            title="Audio Learning & Podcasts"
-          >
-            <Headphones className="w-5 h-5" />
-          </button>
-
-          {/* Settings */}
-          <button
-            onClick={() => onNavigate('settings')}
-            aria-label="Settings"
-            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
-              currentScreen === 'settings' ? 'bg-zinc-800 text-white' : ''
-            }`}
-            title="Settings & Preferences"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
         </nav>
       </div>
 
       {/* Bottom Actions */}
       <div className="flex flex-col items-center gap-3">
+        {/* Settings */}
+        <button
+          onClick={() => onNavigate('settings')}
+          aria-label="Settings"
+          className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
+            currentScreen === 'settings' ? 'bg-zinc-800 text-white' : ''
+          }`}
+          title="Settings & Preferences"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+
         {/* Exit / Log Out Icon */}
         <button
           onClick={() => {

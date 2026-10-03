@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Check, ChevronDown, Sparkles, LogOut, GraduationCap } from 'lucide-react';
+import { Search, Bell, Check, ChevronDown, Sparkles, LogOut, GraduationCap, Flame } from 'lucide-react';
 import { Avatar } from '../common/Avatar';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { currentUser as defaultUser } from '../../data/mockData';
@@ -11,6 +11,7 @@ interface LearnifyHeaderProps {
   onLaunchQuiz?: () => void;
   currentUser?: UserProfile;
   onLogout?: () => void;
+  streak?: number;
   courses: Course[];
 }
 
@@ -20,6 +21,7 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   onLaunchQuiz,
   currentUser = defaultUser,
   onLogout,
+  streak,
   courses,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,17 +126,23 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
           )}
         </div>
 
-        {/* Quiz Engine Launcher Button */}
-        {onLaunchQuiz && (
-          <button
-            onClick={onLaunchQuiz}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-950/70 border border-orange-200 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-            title="Launch Python Quiz Engine"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Quiz Engine</span>
-          </button>
-        )}
+        {/* Streak & Quiz Launcher Button */}
+        <button
+          onClick={onLaunchQuiz}
+          className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 dark:from-orange-950/40 dark:to-amber-950/40 dark:hover:from-orange-950/70 dark:hover:to-amber-950/70 border border-orange-200/80 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 group shrink-0"
+          title={`Active Learning Streak: ${streak ?? currentUser?.streak ?? 5} days 🔥 (Click to practice quizzes)`}
+        >
+          <span className="relative flex items-center justify-center">
+            <Flame className="w-4 h-4 text-[#FF533D] fill-[#FF533D] group-hover:scale-110 transition-transform shrink-0" />
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping opacity-75" />
+          </span>
+          <span className="font-extrabold font-mono text-zinc-900 dark:text-white tabular-nums text-xs sm:text-sm">
+            {streak ?? currentUser?.streak ?? 5}
+          </span>
+          <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 tracking-tight">
+            Day Streak
+          </span>
+        </button>
 
         {/* Dark Mode Switcher */}
         <ThemeToggle />

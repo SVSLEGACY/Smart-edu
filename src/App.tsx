@@ -166,6 +166,9 @@ export default function App() {
     return <StudentLogin onLoginSuccess={(user) => setCurrentUser(user)} />;
   }
 
+  // Active student streak computed from base student streak and completed tasks
+  const studentStreak = (currentUser?.streak || 5) + completedTaskIds.length;
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#121214] text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors duration-300 antialiased overflow-x-hidden">
       <div className="flex-1 flex w-full min-h-screen overflow-hidden">
@@ -186,6 +189,7 @@ export default function App() {
             onLaunchQuiz={() => handleLaunchQuiz()}
             currentUser={currentUser}
             onLogout={handleLogout}
+            streak={studentStreak}
           />
 
           {/* Screen Content with Smooth Animated Page Transitions */}

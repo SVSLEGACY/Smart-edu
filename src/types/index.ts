@@ -11,6 +11,7 @@ export interface UserProfile {
   avatarUrl?: string;
   initials: string;
   notificationsCount: number;
+  streak?: number;
 }
 
 export interface TopicQuizQuestion {
