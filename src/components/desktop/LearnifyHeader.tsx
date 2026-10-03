@@ -8,12 +8,14 @@ import { Course } from '../../types';
 interface LearnifyHeaderProps {
   onSearch?: (query: string) => void;
   onSelectCourse?: (courseId: string) => void;
+  onLaunchQuiz?: () => void;
   courses: Course[];
 }
 
 export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   onSearch,
   onSelectCourse,
+  onLaunchQuiz,
   courses,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,6 +119,18 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
             </div>
           )}
         </div>
+
+        {/* Quiz Engine Launcher Button */}
+        {onLaunchQuiz && (
+          <button
+            onClick={onLaunchQuiz}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-950/70 border border-orange-200 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+            title="Launch Python Quiz Engine"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Quiz Engine</span>
+          </button>
+        )}
 
         {/* Dark Mode Switcher */}
         <ThemeToggle />

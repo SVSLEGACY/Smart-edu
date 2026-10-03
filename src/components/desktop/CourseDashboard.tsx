@@ -12,6 +12,7 @@ interface CourseDashboardProps {
   upcomingLessons: UpcomingLesson[];
   onSelectCourse: (courseId: string) => void;
   onSelectLesson?: (lesson: UpcomingLesson) => void;
+  onLaunchQuiz?: (courseId: string) => void;
   completedTaskIds?: string[];
   onResetTasks?: () => void;
 }
@@ -22,6 +23,7 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
   upcomingLessons,
   onSelectCourse,
   onSelectLesson,
+  onLaunchQuiz,
   completedTaskIds = [],
   onResetTasks,
 }) => {
@@ -174,7 +176,11 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedQuizCourseId(course.id);
+                        if (onLaunchQuiz) {
+                          onLaunchQuiz(course.id);
+                        } else {
+                          setSelectedQuizCourseId(course.id);
+                        }
                       }}
                       className="px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs shadow-xs border border-black/10 dark:border-white/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
                       title="Practice Topic Quiz"
@@ -344,7 +350,13 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
 
             <div className="flex items-center gap-2.5">
               <button
-                onClick={() => setSelectedQuizCourseId(recommendedCourse.id)}
+                onClick={() => {
+                  if (onLaunchQuiz) {
+                    onLaunchQuiz(recommendedCourse.id);
+                  } else {
+                    setSelectedQuizCourseId(recommendedCourse.id);
+                  }
+                }}
                 className="flex-1 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs border border-zinc-700 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
                 title="Practice Topic Quiz"
               >

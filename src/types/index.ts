@@ -1,4 +1,4 @@
-export type ScreenType = 'dashboard' | 'course-player' | 'notes' | 'messages' | 'bookmarks' | 'settings';
+export type ScreenType = 'dashboard' | 'course-player' | 'quiz-engine' | 'notes' | 'messages' | 'bookmarks' | 'settings';
 
 export type CategoryFilter = 'All courses' | 'Core & Slicing' | 'Functions & Scope' | 'Data Structures';
 
@@ -14,6 +14,7 @@ export interface TopicQuizQuestion {
   id: string;
   question: string;
   type: 'code' | 'choice';
+  codeSnippet?: string;
   options?: string[];
   correctIndex?: number;
   starterCode?: string;

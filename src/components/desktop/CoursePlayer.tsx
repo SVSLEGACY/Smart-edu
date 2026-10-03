@@ -28,6 +28,9 @@ interface CoursePlayerProps {
   chapters: LessonChapter[];
   timestamps: VideoTimestamp[];
   onBack: () => void;
+  onLaunchQuiz?: (courseId: string) => void;
+  completedTaskIds?: string[];
+  onCompleteTask?: (taskId: string, courseId?: string) => void;
 }
 
 export const CoursePlayer: React.FC<CoursePlayerProps> = ({
@@ -35,6 +38,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   chapters,
   timestamps,
   onBack,
+  onLaunchQuiz,
+  completedTaskIds = [],
+  onCompleteTask,
 }) => {
   const [activeTab, setActiveTab] = useState<'description' | 'materials' | 'hometask' | 'quiz'>('description');
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
@@ -305,11 +311,17 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                     </h4>
                   </div>
                   <button
-                    onClick={() => setIsQuizModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => {
+                      if (onLaunchQuiz) {
+                        onLaunchQuiz(course.id);
+                      } else {
+                        setIsQuizModalOpen(true);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Launch Quiz Mode</span>
+                    <span>Launch Quiz Engine</span>
                   </button>
                 </div>
 
@@ -321,9 +333,17 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-zinc-400">Question {idx + 1}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
-                          {q.type}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {completedTaskIds.includes(q.id) && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center gap-1">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              <span>Mastered</span>
+                            </span>
+                          )}
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
+                            {q.type}
+                          </span>
+                        </div>
                       </div>
                       <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white">
                         {q.question}
@@ -333,10 +353,16 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                           Focus: {q.concept}
                         </span>
                         <button
-                          onClick={() => setIsQuizModalOpen(true)}
+                          onClick={() => {
+                            if (onLaunchQuiz) {
+                              onLaunchQuiz(course.id);
+                            } else {
+                              setIsQuizModalOpen(true);
+                            }
+                          }}
                           className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer flex items-center gap-1"
                         >
-                          <span>Solve with Diagnostic Engine →</span>
+                          <span>Solve in Quiz Engine →</span>
                         </button>
                       </div>
                     </div>
@@ -526,6 +552,11 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
           <TopicQuizModal
             quiz={currentQuiz}
             onClose={() => setIsQuizModalOpen(false)}
+            onQuizCompleted={(_score) => {
+              if (onCompleteTask) {
+                onCompleteTask(`topic-complete-${course.id}`, course.id);
+              }
+            }}
           />
         )}
       </AnimatePresence>

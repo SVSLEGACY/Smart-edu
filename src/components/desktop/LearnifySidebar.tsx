@@ -57,6 +57,21 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
             <span className="sr-only">My Courses</span>
           </button>
 
+          {/* Python Quiz Engine */}
+          <button
+            onClick={() => onNavigate('quiz-engine')}
+            aria-label="Python Quiz Engine"
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative text-zinc-400 hover:text-white hover:bg-zinc-800/60 ${
+              currentScreen === 'quiz-engine'
+                ? 'bg-[#FF533D] text-white shadow-md shadow-orange-500/20 scale-105'
+                : ''
+            }`}
+            title="Python Quiz Engine"
+          >
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <span className="sr-only">Python Quiz Engine</span>
+          </button>
+
           {/* Notes / Notebook */}
           <button
             onClick={() => onNavigate('notes')}

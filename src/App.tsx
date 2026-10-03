@@ -18,6 +18,7 @@ import { LearnifyHeader } from './components/desktop/LearnifyHeader';
 import { CourseDashboard } from './components/desktop/CourseDashboard';
 import { CoursePlayer } from './components/desktop/CoursePlayer';
 import { NotesAndBookmarksView } from './components/desktop/NotesAndBookmarksView';
+import { QuizEngine } from './components/desktop/QuizEngine';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
@@ -47,11 +48,45 @@ export default function App() {
     'lesson-comp-05': 'course-python-comprehensions',
     'lesson-algo-02': 'course-python-algorithms',
     'lesson-slice-04': 'course-python-slicing',
+    // Python Sequences Slicing Quizzes
     'q-slice-01': 'course-python-slicing',
     'q-slice-02': 'course-python-slicing',
+    'q-slice-03': 'course-python-slicing',
+    'q-slice-04': 'course-python-slicing',
+    'topic-complete-course-python-slicing': 'course-python-slicing',
+    // Python Functions & Scope Quizzes
     'q-func-01': 'course-python-functions',
+    'q-func-02': 'course-python-functions',
+    'q-func-03': 'course-python-functions',
+    'q-func-04': 'course-python-functions',
+    'topic-complete-course-python-functions': 'course-python-functions',
+    // Python Comprehensions Quizzes
     'q-comp-01': 'course-python-comprehensions',
+    'q-comp-02': 'course-python-comprehensions',
+    'q-comp-03': 'course-python-comprehensions',
+    'q-comp-04': 'course-python-comprehensions',
+    'topic-complete-course-python-comprehensions': 'course-python-comprehensions',
+    // Algorithmic Python Quizzes
     'q-algo-01': 'course-python-algorithms',
+    'q-algo-02': 'course-python-algorithms',
+    'q-algo-03': 'course-python-algorithms',
+    'q-algo-04': 'course-python-algorithms',
+    'topic-complete-course-python-algorithms': 'course-python-algorithms',
+  };
+
+  const handleCompleteTask = (taskId: string, _courseId?: string) => {
+    setCompletedTaskIds((prev) => {
+      if (prev.includes(taskId)) return prev;
+      const updated = [...prev, taskId];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('learnify-completed-tasks', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Error saving completed task', e);
+        }
+      }
+      return updated;
+    });
   };
 
   const handleResetTasks = () => {
@@ -59,6 +94,13 @@ export default function App() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('learnify-completed-tasks');
     }
+  };
+
+  const handleLaunchQuiz = (courseId?: string) => {
+    if (courseId) {
+      setActiveCourseId(courseId);
+    }
+    setCurrentScreen('quiz-engine');
   };
 
   // Dynamically compute course progress based on completed tasks
@@ -125,6 +167,7 @@ export default function App() {
             courses={allCourses}
             onSearch={setSearchFilter}
             onSelectCourse={handleSelectCourse}
+            onLaunchQuiz={() => handleLaunchQuiz()}
           />
 
           {/* Screen Content with Smooth Animated Page Transitions */}
@@ -145,8 +188,29 @@ export default function App() {
                     upcomingLessons={syncedUpcomingLessons}
                     onSelectCourse={handleSelectCourse}
                     onSelectLesson={handleSelectUpcomingLesson}
+                    onLaunchQuiz={handleLaunchQuiz}
                     completedTaskIds={completedTaskIds}
                     onResetTasks={handleResetTasks}
+                  />
+                </motion.div>
+              )}
+
+              {currentScreen === 'quiz-engine' && (
+                <motion.div
+                  key="quiz-engine"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex-1 flex flex-col"
+                >
+                  <QuizEngine
+                    courses={allCourses}
+                    activeCourseId={activeCourseId}
+                    completedTaskIds={completedTaskIds}
+                    onCompleteTask={handleCompleteTask}
+                    onSelectCourse={handleSelectCourse}
+                    onBack={() => setCurrentScreen('dashboard')}
                   />
                 </motion.div>
               )}
@@ -165,6 +229,9 @@ export default function App() {
                     chapters={publicSpeakingChapters}
                     timestamps={publicSpeakingTimestamps}
                     onBack={() => setCurrentScreen('dashboard')}
+                    onLaunchQuiz={handleLaunchQuiz}
+                    completedTaskIds={completedTaskIds}
+                    onCompleteTask={handleCompleteTask}
                   />
                 </motion.div>
               )}
