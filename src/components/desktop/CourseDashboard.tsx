@@ -43,11 +43,11 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
   });
 
   // Filter categories matching image layout
-  const categories: string[] = ['All courses', 'Data Structures', 'Functions & Scope', 'Core & Slicing'];
+  const categories: string[] = ['All courses', 'Data Structures', 'Functions & Scope', 'Core Syntax & Control Flow'];
 
   // Map courses to match the exact 3 primary tracks in reference design
   const primaryCourses = courses.filter((c) =>
-    ['course-python-comprehensions', 'course-python-functions', 'course-python-slicing'].includes(c.id)
+    ['course-python-comprehensions', 'course-python-functions', 'course-python-syntax'].includes(c.id)
   );
 
   const filteredCourses =
@@ -246,7 +246,7 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
 
               <button
                 type="button"
-                onClick={() => onSelectCourse('course-python-slicing', difficulty)}
+                onClick={() => onSelectCourse('course-python-syntax', difficulty)}
                 className="text-xs font-bold text-[#FF533D] hover:underline cursor-pointer"
               >
                 Launch Workspace →

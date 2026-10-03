@@ -1,0 +1,599 @@
+question_id,question_text,correct_answer,learner_response,misconception_id,misconception_label,error_trace,student_explanation,difficulty,is_correct
+Q4_M4_var19,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q4_M4_var77,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q7_M7_var38,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q3_M3_var96,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q7_M7_var31,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q1_M1_var70,Write a function that prints numbers 1 to 5 using a for loop. (variation 70),"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q5_M5_var93,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q8_M8_var64,Calculate the average of two numbers (return float).,"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q9_M9_var96,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q1_M1_var30,Write a function that prints numbers 1 to 5 using a for loop. (variation 30),"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q2_M2_var92,Write a function that checks if a number is even.,"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q10_M10_var70,Concatenate a string and a number. (variation 70),"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q7_M7_var85,Double all elements without modifying the original list. (variation 85),"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q8_M8_var5,Calculate the average of two numbers (return float). (variation 5),"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q10_M10_var12,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q1_M1_var86,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q4_M4_var21,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q4_M4_var61,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q1_M1_var39,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q9_M9_var37,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q4_M4_var14,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q3_M3_var90,Write a function that appends an item to a list (default empty). (variation 90),"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q3_M3_var35,Write a function that appends an item to a list (default empty). (variation 35),"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q1_M1_var96,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q9_M9_var16,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q9_M9_var15,Return the last element of a list. (variation 15),"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q7_M7_var99,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q4_M4_var52,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q10_M10_var57,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q5_M5_var39,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q3_M3_var59,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q2_M2_var7,Write a function that checks if a number is even.,"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q1_M1_var63,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q2_M2_var20,Write a function that checks if a number is even. (variation 20),"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q5_M5_var44,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q9_M9_var56,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q1_M1_var67,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q7_M7_var28,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q2_M2_var37,Write a function that checks if a number is even.,"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q7_M7_var52,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q9_M9_var11,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q4_M4_var32,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q8_M8_var52,Calculate the average of two numbers (return float).,"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q3_M3_var44,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q2_M2_var65,Write a function that checks if a number is even. (variation 65),"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q9_M9_var58,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q8_M8_var34,Calculate the average of two numbers (return float).,"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q1_M1_var23,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q2_M2_var10,Write a function that checks if a number is even. (variation 10),"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q5_M5_var30,Write a function that increments a global counter. (variation 30),"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q9_M9_var54,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q5_M5_var28,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q3_M3_var54,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q7_M7_var25,Double all elements without modifying the original list. (variation 25),"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q5_M5_var9,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q9_M9_var60,Return the last element of a list. (variation 60),"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q8_M8_var88,Calculate the average of two numbers (return float).,"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q3_M3_var8,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q1_M1_var72,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q7_M7_var39,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q4_M4_var11,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q4_M4_var67,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q8_M8_var77,Calculate the average of two numbers (return float).,"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q9_M9_var7,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q7_M7_var59,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q10_M10_var77,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q5_M5_var64,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q10_M10_var49,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q5_M5_var40,Write a function that increments a global counter. (variation 40),"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q10_M10_var9,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q9_M9_var95,Return the last element of a list. (variation 95),"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q1_M1_var44,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q9_M9_var31,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q4_M4_var12,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q3_M3_var9,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q4_M4_var57,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q2_M2_var41,Write a function that checks if a number is even.,"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q10_M10_var28,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q3_M3_var94,Write a function that appends an item to a list (default empty).,"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q3_M3_var60,Write a function that appends an item to a list (default empty). (variation 60),"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q7_M7_var93,Double all elements without modifying the original list.,"def double_list(lst):
+    new_list = lst.copy()
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list","def double_list(lst):
+    new_list = lst
+    for i in range(len(new_list)):
+        new_list[i] *= 2
+    return new_list",M7_LIST_REFERENCE_VS_COPY,List Reference vs Copy,No error but original list is modified (logic error),I thought = creates a copy of the list.,2,FALSE
+Q10_M10_var81,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q4_M4_var26,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q10_M10_var58,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q10_M10_var68,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q10_M10_var63,Concatenate a string and a number.,"def concat_string_number(s, n):
+    return s + str(n)","def concat_string_number(s, n):
+    return s + n",M10_TYPE_COERCION,Implicit Type Coercion,TypeError: can only concatenate str (not 'int') to str,"In JavaScript, this works fine.",1,FALSE
+Q9_M9_var99,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q3_M3_var80,Write a function that appends an item to a list (default empty). (variation 80),"def add_item(item, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(item)
+    return lst","def add_item(item, lst=[]):
+    lst.append(item)
+    return lst",M3_MUTABLE_DEFAULT_ARGS,Mutable Default Arguments,No syntax error but causes shared state bug,"The list should reset every time, right?",3,FALSE
+Q1_M1_var60,Write a function that prints numbers 1 to 5 using a for loop. (variation 60),"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q2_M2_var36,Write a function that checks if a number is even.,"def is_even(n):
+    if n % 2 == 0:
+        return True
+    return False","def is_even(n):
+    if n % 2 = 0:
+        return True
+    return False",M2_ASSIGNMENT_VS_COMPARISON,Assignment = vs Comparison ==,SyntaxError: invalid syntax,I thought = and == are the same in conditions.,1,FALSE
+Q9_M9_var64,Return the last element of a list.,"def get_last(lst):
+    if len(lst) == 0:
+        return None
+    return lst[-1]","def get_last(lst):
+    return lst[len(lst)]",M9_INDEX_OUT_OF_RANGE,Index Boundary Understanding,IndexError: list index out of range,The last element should be at position equal to length.,2,FALSE
+Q8_M8_var70,Calculate the average of two numbers (return float). (variation 70),"def average(a, b):
+    return (a + b) / 2","def average(a, b):
+    return (a + b) // 2",M8_INTEGER_DIVISION,Integer Division Confusion,No error but returns integer instead of float,I thought // and / are the same.,2,FALSE
+Q5_M5_var51,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE
+Q1_M1_var66,Write a function that prints numbers 1 to 5 using a for loop.,"def print_numbers():
+    for i in range(1, 6):
+        print(i)","def print_numbers():
+for i in range(1, 6):
+print(i)",M1_INDENTATION,Indentation as Syntax Not Semantics,IndentationError: expected an indented block,I thought indentation was just for readability.,1,FALSE
+Q4_M4_var34,Capitalize the first character of a string.,"def capitalize_first(s):
+    if len(s) == 0:
+        return s
+    return s[0].upper() + s[1:]","def capitalize_first(s):
+    if len(s) > 0:
+        s[0] = s[0].upper()
+    return s",M4_STRING_IMMUTABILITY,String Immutability,TypeError: 'str' object does not support item assignment,Why can't I just change one character?,2,FALSE
+Q5_M5_var99,Write a function that increments a global counter.,"counter = 0
+
+def increment_counter():
+    global counter
+    counter += 1
+    return counter","counter = 0
+
+def increment_counter():
+    counter += 1
+    return counter",M5_SCOPE_CONFUSION,Variable Scope Confusion,UnboundLocalError: local variable 'counter' referenced before assignment,I thought the function would use the global variable.,3,FALSE

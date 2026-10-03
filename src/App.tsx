@@ -25,7 +25,7 @@ import { UserProfile } from './types';
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredStudentSession());
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
-  const [activeCourseId, setActiveCourseId] = useState<string>('course-python-slicing');
+  const [activeCourseId, setActiveCourseId] = useState<string>('course-python-syntax');
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   // Completed task ids for course progress
@@ -70,7 +70,35 @@ export default function App() {
     'topic-complete-course-python-functions': 'course-python-functions',
   };
 
-  const handleCompleteTask = (taskId: string, _courseId?: string) => {
+  const getCourseForTask = (taskId: string): string => {
+    if (
+      taskId.includes('M1_') ||
+      taskId.includes('M2_') ||
+      taskId.includes('M10_') ||
+      taskId.includes('M8_') ||
+      taskId.includes('syntax')
+    ) {
+      return 'course-python-syntax';
+    }
+    if (
+      taskId.includes('M4_') ||
+      taskId.includes('M7_') ||
+      taskId.includes('M9_') ||
+      taskId.includes('comprehensions')
+    ) {
+      return 'course-python-comprehensions';
+    }
+    if (
+      taskId.includes('M3_') ||
+      taskId.includes('M5_') ||
+      taskId.includes('functions')
+    ) {
+      return 'course-python-functions';
+    }
+    return taskCourseMap[taskId] || 'course-python-syntax';
+  };
+
+  const handleCompleteTask = (taskId: string, courseId?: string) => {
     setCompletedTaskIds((prev) => {
       if (prev.includes(taskId)) return prev;
       const updated = [...prev, taskId];
@@ -102,7 +130,7 @@ export default function App() {
   // Dynamically compute course progress based on completed tasks
   const syncedCourses: Course[] = coursesData.map((course) => {
     const completedTasksForCourse = completedTaskIds.filter(
-      (taskId) => taskCourseMap[taskId] === course.id
+      (taskId) => getCourseForTask(taskId) === course.id
     );
     const bonusLessons = completedTasksForCourse.length;
     return {
