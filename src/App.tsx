@@ -34,6 +34,22 @@ export default function App() {
 
   const [searchFilter, setSearchFilter] = useState<string>('');
 
+  // Completed task ids synced between Mobile Companion and Course Dashboard
+  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('learnify-completed-tasks');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        } catch (e) {
+          console.error('Error loading completed tasks', e);
+        }
+      }
+    }
+    return [];
+  });
+
   useEffect(() => {
     const handleResize = () => {
       // Auto-adapt when user resizes their screen
@@ -48,9 +64,75 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const allCourses = [...coursesData, recommendedCourse];
+  // Map each task ID to its corresponding course
+  const taskCourseMap: Record<string, string> = {
+    'sch-1': 'course-creative-writing',
+    'sch-2': 'course-public-speaking',
+    'sch-3': 'course-microsoft-future-ready',
+    'sch-4': 'course-digital-illustration',
+    'sch-5': 'course-digital-illustration',
+    'quick-dev': 'course-digital-illustration',
+    'quick-math': 'course-public-speaking',
+  };
+
+  // Toggle task completion and persist in localStorage
+  const handleToggleTaskCompletion = (taskId: string, courseId?: string, taskTitle?: string) => {
+    setCompletedTaskIds((prev) => {
+      const isAlreadyCompleted = prev.includes(taskId);
+      const updated = isAlreadyCompleted
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('learnify-completed-tasks', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  const handleResetTasks = () => {
+    setCompletedTaskIds([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('learnify-completed-tasks');
+    }
+  };
+
+  // Dynamically compute course progress based on completed tasks
+  const syncedCourses: Course[] = coursesData.map((course) => {
+    const completedTasksForCourse = completedTaskIds.filter(
+      (taskId) => taskCourseMap[taskId] === course.id
+    );
+    const bonusLessons = completedTasksForCourse.length;
+    return {
+      ...course,
+      progressLessons: Math.min(course.totalLessons, course.progressLessons + bonusLessons),
+    };
+  });
+
+  const syncedRecommendedCourse: Course = {
+    ...recommendedCourse,
+    progressLessons: Math.min(
+      recommendedCourse.totalLessons,
+      recommendedCourse.progressLessons +
+        completedTaskIds.filter((taskId) => taskCourseMap[taskId] === recommendedCourse.id).length
+    ),
+  };
+
+  const allCourses = [...syncedCourses, syncedRecommendedCourse];
   const activeCourse =
-    allCourses.find((c) => c.id === activeCourseId) || coursesData[2];
+    allCourses.find((c) => c.id === activeCourseId) || syncedCourses[2];
+
+  // Also sync upcoming lessons completion state
+  const syncedUpcomingLessons: UpcomingLesson[] = upcomingLessonsData.map((lesson) => {
+    const isDone =
+      (lesson.id === 'lesson-cw-01' && completedTaskIds.includes('sch-1')) ||
+      (lesson.id === 'lesson-ai-05' &&
+        (completedTaskIds.includes('sch-4') || completedTaskIds.includes('sch-5'))) ||
+      (lesson.id === 'lesson-ps-11' && completedTaskIds.includes('sch-2'));
+    return {
+      ...lesson,
+      isCompleted: isDone,
+    } as any;
+  });
 
   const handleSelectCourse = (courseId: string) => {
     setActiveCourseId(courseId);
@@ -87,6 +169,7 @@ export default function App() {
               onSelectCourse={handleSelectCourse}
               activeViewMode="desktop"
               onChangeViewMode={(mode) => setIsMobileMode(mode === 'mobile-preview')}
+              completedCount={completedTaskIds.length}
             />
 
             {/* Screen Content with Smooth Animated Page Transitions */}
@@ -102,11 +185,14 @@ export default function App() {
                     className="flex-1 flex flex-col"
                   >
                     <CourseDashboard
-                      courses={coursesData}
-                      recommendedCourse={recommendedCourse}
-                      upcomingLessons={upcomingLessonsData}
+                      courses={syncedCourses}
+                      recommendedCourse={syncedRecommendedCourse}
+                      upcomingLessons={syncedUpcomingLessons}
                       onSelectCourse={handleSelectCourse}
                       onSelectLesson={handleSelectUpcomingLesson}
+                      completedTaskIds={completedTaskIds}
+                      onOpenMobileCompanion={() => setIsMobileMode(true)}
+                      onResetTasks={handleResetTasks}
                     />
                   </motion.div>
                 )}
@@ -170,6 +256,9 @@ export default function App() {
             /* Direct Native Mobile App Interface */
             <MobileCompanionApp
               onBackToDesktop={() => setIsMobileMode(false)}
+              completedTaskIds={completedTaskIds}
+              onToggleTaskCompletion={handleToggleTaskCompletion}
+              courses={allCourses}
             />
           )}
         </div>

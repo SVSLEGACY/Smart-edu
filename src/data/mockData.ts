@@ -313,6 +313,9 @@ export const scheduleItems: ScheduleItem[] = [
     duration: '30 min',
     icon: '✏️',
     note: 'Chapter 01: Character building draft',
+    courseId: 'course-creative-writing',
+    lessonTitle: 'Character building draft',
+    isCompleted: false,
   },
   {
     id: 'sch-2',
@@ -324,6 +327,9 @@ export const scheduleItems: ScheduleItem[] = [
     duration: '30 min',
     icon: '📐',
     note: 'Geometry formulas & mental calculation',
+    courseId: 'course-public-speaking',
+    lessonTitle: 'Logic and structure: Mental calculation',
+    isCompleted: false,
   },
   {
     id: 'sch-3',
@@ -335,6 +341,9 @@ export const scheduleItems: ScheduleItem[] = [
     duration: '30 min',
     icon: '🧪',
     note: 'Periodic table atomic bonds review',
+    courseId: 'course-microsoft-future-ready',
+    lessonTitle: 'Scientific analysis: Atomic bonds review',
+    isCompleted: false,
   },
   {
     id: 'sch-4',
@@ -346,6 +355,9 @@ export const scheduleItems: ScheduleItem[] = [
     duration: '30 min',
     icon: '💻',
     note: 'JavaScript & React state practice',
+    courseId: 'course-digital-illustration',
+    lessonTitle: 'Interactive tools: React & JS state',
+    isCompleted: false,
   },
   {
     id: 'sch-5',
@@ -357,6 +369,9 @@ export const scheduleItems: ScheduleItem[] = [
     duration: '30 min',
     icon: '🎨',
     note: 'Keyframing curves & spring physics',
+    courseId: 'course-digital-illustration',
+    lessonTitle: 'Vector motion: Keyframing curves',
+    isCompleted: false,
   },
 ];
 

@@ -11,6 +11,7 @@ interface LearnifyHeaderProps {
   courses: Course[];
   activeViewMode: 'desktop' | 'mobile-preview' | 'split';
   onChangeViewMode: (mode: 'desktop' | 'mobile-preview' | 'split') => void;
+  completedCount?: number;
 }
 
 export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
@@ -19,6 +20,7 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   courses,
   activeViewMode,
   onChangeViewMode,
+  completedCount = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -144,10 +146,15 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
                 ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
-            title="Len's Mobile Companion (3 screens)"
+            title="Switch to Phone Interface with study schedule and quizzes"
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>Len App</span>
+            <span>Phone View</span>
+            {completedCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-500 text-white leading-none">
+                {completedCount} done
+              </span>
+            )}
           </button>
         </div>
 

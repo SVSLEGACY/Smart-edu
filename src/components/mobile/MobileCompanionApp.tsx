@@ -32,21 +32,62 @@ import { ThemeToggle } from '../common/ThemeToggle';
 import { MascotRobot } from '../common/MascotRobot';
 import { BusinessAnalyticsIllustration } from '../common/BusinessAnalyticsIllustration';
 import { quizQuestions, scheduleItems, mobileUser } from '../../data/mockData';
-import { ScheduleItem } from '../../types';
+import { ScheduleItem, Course } from '../../types';
 
 interface MobileCompanionAppProps {
   onBackToDesktop?: () => void;
   initialScreen?: 'dashboard' | 'quiz' | 'schedule';
+  completedTaskIds?: string[];
+  onToggleTaskCompletion?: (taskId: string, courseId?: string, taskTitle?: string) => void;
+  courses?: Course[];
 }
 
 export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   onBackToDesktop,
   initialScreen = 'dashboard',
+  completedTaskIds,
+  onToggleTaskCompletion,
+  courses = [],
 }) => {
   const [activeMobileScreen, setActiveMobileScreen] = useState<'dashboard' | 'quiz' | 'schedule'>(
     initialScreen
   );
   const [viewStyle, setViewStyle] = useState<'single-phone' | 'all-three'>('single-phone');
+
+  // Fallback completed tasks if not controlled from parent
+  const [localCompletedTasks, setLocalCompletedTasks] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('learnify-completed-tasks');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        } catch (e) {}
+      }
+    }
+    return [];
+  });
+
+  const activeCompletedTaskIds = completedTaskIds ?? localCompletedTasks;
+
+  // Course title resolver helper
+  const getCourseTitle = (courseId?: string) => {
+    if (!courseId) return 'General Study';
+    const found = courses.find((c) => c.id === courseId);
+    if (found) return found.title;
+    switch (courseId) {
+      case 'course-creative-writing':
+        return 'Creative Writing';
+      case 'course-digital-illustration':
+        return 'Digital Illustration';
+      case 'course-public-speaking':
+        return 'Public Speaking';
+      case 'course-microsoft-future-ready':
+        return 'Microsoft Future Ready';
+      default:
+        return 'Course Dashboard';
+    }
+  };
 
   // Quiz state
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -78,6 +119,33 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [scheduleFeedbackToast, setScheduleFeedbackToast] = useState<string | null>(null);
+
+  const handleToggleTask = (taskId: string, courseId?: string, taskTitle?: string) => {
+    const isNowDone = !activeCompletedTaskIds.includes(taskId);
+
+    if (onToggleTaskCompletion) {
+      onToggleTaskCompletion(taskId, courseId, taskTitle);
+    } else {
+      setLocalCompletedTasks((prev) => {
+        const next = prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId];
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('learnify-completed-tasks', JSON.stringify(next));
+        }
+        return next;
+      });
+    }
+
+    const courseName = getCourseTitle(courseId);
+    if (isNowDone) {
+      setScheduleFeedbackToast(`✓ Completed "${taskTitle || 'Task'}"! Synced to ${courseName} (+1 lesson in Course Dashboard)`);
+    } else {
+      setScheduleFeedbackToast(`Task "${taskTitle || 'Task'}" unmarked. Dashboard progress updated.`);
+    }
+
+    setTimeout(() => {
+      setScheduleFeedbackToast(null);
+    }, 3200);
+  };
 
   const saveScheduleToStorage = (newList: ScheduleItem[]) => {
     if (typeof window !== 'undefined') {
@@ -208,9 +276,18 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
             >
               <span className="text-[10px] text-pink-500 group-hover:scale-110 transition-transform">📖</span>
               <div className="w-14 h-1.5 rounded-full bg-pink-100 dark:bg-pink-950/60 overflow-hidden">
-                <div className="w-3/5 h-full bg-pink-500 rounded-full" />
+                <div
+                  className="h-full bg-pink-500 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, 58 + activeCompletedTaskIds.length * 8)}%` }}
+                />
               </div>
             </button>
+            {activeCompletedTaskIds.length > 0 && (
+              <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{activeCompletedTaskIds.length} tasks synced to Dashboard</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -590,8 +667,8 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
   // Render Mobile Schedule (Screen 3 in Image 2/3)
   const renderScheduleScreen = () => (
     <div className="flex flex-col h-full bg-[#FBFBFC] dark:bg-[#18181B] text-zinc-900 dark:text-zinc-100 p-5 overflow-y-auto scrollbar-none select-none">
-      {/* Top Header: Back + Calendar + Bell + Len Avatar */}
-      <div className="flex items-center justify-between pb-3">
+      {/* Top Header: Back + Live Sync Indicator + Bell + Len Avatar */}
+      <div className="flex items-center justify-between pb-2">
         <button
           onClick={() => setActiveMobileScreen('dashboard')}
           className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-xs cursor-pointer"
@@ -599,10 +676,13 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
           <ChevronLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
         </button>
 
+        {/* Live Sync Status Pill */}
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold shadow-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Synced with Course Dashboard</span>
+        </div>
+
         <div className="flex items-center gap-2">
-          <button className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-xs">
-            <CalendarIcon className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-          </button>
           <button className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-xs">
             <Bell className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
           </button>
@@ -610,35 +690,47 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
         </div>
       </div>
 
-      {/* Top Card: "Learnings today: 58% / 28min" (Matching Screenshot 3) */}
-      <div className="p-4 rounded-3xl bg-[#FBF3E8] dark:bg-[#2C2114] border border-[#F3DFC7] dark:border-[#463420] flex flex-col justify-between my-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-200">
-            <span>📖</span>
-            <span>Learnings today</span>
-          </div>
-          <button
-            onClick={() => setProgressToday((prev) => Math.min(100, prev + 10))}
-            className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-xs hover:scale-105 transition-transform cursor-pointer"
-          >
-            <ArrowRight className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />
-          </button>
-        </div>
+      {/* Top Card: "Learnings today: X% / Ymin" (Matching Screenshot 3 & Dynamically Synced) */}
+      {(() => {
+        const dynamicProgress = Math.min(100, Math.max(progressToday, 58 + activeCompletedTaskIds.length * 8));
+        const dynamicMinutes = 28 + activeCompletedTaskIds.length * 15;
+        return (
+          <div className="p-4 rounded-3xl bg-[#FBF3E8] dark:bg-[#2C2114] border border-[#F3DFC7] dark:border-[#463420] flex flex-col justify-between my-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-200">
+                <span>📖</span>
+                <span>Learnings today</span>
+                {activeCompletedTaskIds.length > 0 && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-extrabold ml-1">
+                    {activeCompletedTaskIds.length} done
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setProgressToday((prev) => Math.min(100, prev + 10))}
+                className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-xs hover:scale-105 transition-transform cursor-pointer"
+                title="Increase study minutes"
+              >
+                <ArrowRight className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />
+              </button>
+            </div>
 
-        <div className="mt-3">
-          <span className="text-2xl font-black text-zinc-950 dark:text-white font-heading">
-            {progressToday}% / 28min
-          </span>
+            <div className="mt-3">
+              <span className="text-2xl font-black text-zinc-950 dark:text-white font-heading">
+                {dynamicProgress}% / {dynamicMinutes}min
+              </span>
 
-          {/* Interactive Progress Slider */}
-          <div className="mt-2.5 relative w-full h-2 rounded-full bg-zinc-300 dark:bg-zinc-700 overflow-hidden">
-            <div
-              className="h-full bg-zinc-950 dark:bg-white rounded-full transition-all duration-300"
-              style={{ width: `${progressToday}%` }}
-            />
+              {/* Interactive Progress Slider */}
+              <div className="mt-2.5 relative w-full h-2 rounded-full bg-zinc-300 dark:bg-zinc-700 overflow-hidden">
+                <div
+                  className="h-full bg-zinc-950 dark:bg-white rounded-full transition-all duration-300"
+                  style={{ width: `${dynamicProgress}%` }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Weekday strip: S 13, M 14 (active black filled circle), T 15, W 16, T 17 */}
       <div className="grid grid-cols-5 gap-2 my-3">
@@ -674,7 +766,7 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
             My Schedule
           </h3>
           <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
-            Drag cards or tap ↑↓ to reorder
+            Tap circle to complete • Drag or ↑↓ to reorder
           </span>
         </div>
 
@@ -690,11 +782,13 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
         </div>
       </div>
 
-      {/* Drag & Drop Reorderable Task List */}
-      <div className="flex flex-col gap-2 my-1.5">
+      {/* Drag & Drop Reorderable Task List with Interactive Completion Checkboxes */}
+      <div className="flex flex-col gap-2.5 my-1.5">
         {scheduleList.map((task, index) => {
           const isDragging = draggedIndex === index;
           const isOver = dragOverIndex === index;
+          const isTaskCompleted = activeCompletedTaskIds.includes(task.id);
+          const courseTitle = getCourseTitle(task.courseId);
 
           return (
             <div
@@ -729,17 +823,36 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
                 setDraggedIndex(null);
                 setDragOverIndex(null);
               }}
-              className={`relative p-2.5 rounded-2xl border transition-all duration-200 select-none ${
+              className={`relative p-3 rounded-2xl border transition-all duration-200 select-none ${
                 isDragging
                   ? 'opacity-35 scale-95 border-dashed border-orange-500 bg-orange-50 dark:bg-orange-950/20'
                   : isOver
                   ? 'border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 scale-[1.02] shadow-md ring-2 ring-orange-500/20'
+                  : isTaskCompleted
+                  ? 'border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs'
                   : 'border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-800/90 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs'
               }`}
             >
               <div className="flex items-center justify-between gap-2">
-                {/* Left: Drag Handle, Time, and Subject Pill */}
+                {/* Left: Interactive Checkbox + Drag Handle + Time + Subject */}
                 <div className="flex items-center gap-2 min-w-0">
+                  {/* Interactive Checkbox Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleTask(task.id, task.courseId, task.subject || task.lessonTitle);
+                    }}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                      isTaskCompleted
+                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30 scale-105 ring-2 ring-emerald-500/20'
+                        : 'border-2 border-zinc-300 dark:border-zinc-600 hover:border-emerald-500 bg-white dark:bg-zinc-800 hover:scale-105'
+                    }`}
+                    title={isTaskCompleted ? 'Mark as incomplete' : 'Complete task & sync progress to Course Dashboard'}
+                  >
+                    {isTaskCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </button>
+
                   {/* Grip Vertical Drag Handle */}
                   <div
                     className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/80 transition-colors shrink-0"
@@ -758,7 +871,7 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
                     className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 shadow-xs border ${task.colorClass} ${task.darkColorClass}`}
                   >
                     <span>{task.icon || '📚'}</span>
-                    <span>{task.subject}</span>
+                    <span className={isTaskCompleted ? 'line-through opacity-85' : ''}>{task.subject}</span>
                   </div>
                 </div>
 
@@ -797,44 +910,129 @@ export const MobileCompanionApp: React.FC<MobileCompanionAppProps> = ({
                 </div>
               </div>
 
-              {/* Note / Subtitle */}
-              {task.note && (
-                <div className="pl-6 pt-1 text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
-                  {task.note}
+              {/* Course Sync Details & Note */}
+              <div className="pl-8 pt-1.5 flex flex-col gap-0.5">
+                <div className="flex items-center justify-between text-[11px] gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-zinc-400 dark:text-zinc-500 font-medium">Syncs with:</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">
+                      {courseTitle}
+                    </span>
+                  </div>
+                  {isTaskCompleted ? (
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                      <span>+1 Lesson Synced</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleToggleTask(task.id, task.courseId, task.subject || task.lessonTitle)}
+                      className="text-[10px] font-bold text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                    >
+                      Tap to complete →
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {task.note && (
+                  <p className={`text-[10px] truncate ${isTaskCompleted ? 'text-zinc-400 dark:text-zinc-500 line-through' : 'text-zinc-600 dark:text-zinc-300'}`}>
+                    {task.note}
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Bottom Quick Cards: Developing 15 min & Math 12 min */}
+      {/* Bottom Quick Cards: Developing 15 min & Math 12 min with Live Course Dashboard Sync */}
       <div className="flex flex-col gap-2 mt-auto pt-3">
-        <div className="p-3 rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between shadow-xs hover:border-zinc-300 transition-colors">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xs">
-              🚀
-            </div>
-            <div>
-              <h5 className="text-xs font-bold text-zinc-900 dark:text-white">Developing</h5>
-              <span className="text-[10px] text-zinc-400">15 min quick sprint</span>
-            </div>
-          </div>
-          <ExternalLink className="w-4 h-4 text-zinc-400" />
-        </div>
+        {/* Developing Sprint */}
+        {(() => {
+          const isDevSprintDone = activeCompletedTaskIds.includes('quick-dev');
+          return (
+            <div
+              className={`p-3 rounded-2xl border transition-all flex items-center justify-between shadow-xs ${
+                isDevSprintDone
+                  ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/60'
+                  : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs">
+                  🚀
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-xs font-bold text-zinc-900 dark:text-white">Developing</h5>
+                    <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">
+                      (Digital Illustration)
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-zinc-400">15 min quick sprint</span>
+                </div>
+              </div>
 
-        <div className="p-3 rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between shadow-xs hover:border-zinc-300 transition-colors">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-xs">
-              📐
+              <button
+                type="button"
+                onClick={() =>
+                  handleToggleTask('quick-dev', 'course-digital-illustration', 'Developing Quick Sprint')
+                }
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  isDevSprintDone
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
+                }`}
+              >
+                {isDevSprintDone ? '✓ Synced' : 'Complete'}
+              </button>
             </div>
-            <div>
-              <h5 className="text-xs font-bold text-zinc-900 dark:text-white">Math</h5>
-              <span className="text-[10px] text-zinc-400">12 min geometry review</span>
+          );
+        })()}
+
+        {/* Math Sprint */}
+        {(() => {
+          const isMathSprintDone = activeCompletedTaskIds.includes('quick-math');
+          return (
+            <div
+              className={`p-3 rounded-2xl border transition-all flex items-center justify-between shadow-xs ${
+                isMathSprintDone
+                  ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/60'
+                  : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xs">
+                  📐
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-xs font-bold text-zinc-900 dark:text-white">Math</h5>
+                    <span className="text-[10px] font-semibold text-rose-600 dark:text-rose-400">
+                      (Public Speaking Logic)
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-zinc-400">12 min geometry review</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleToggleTask('quick-math', 'course-public-speaking', 'Math Quick Sprint')
+                }
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  isMathSprintDone
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'bg-pink-100 hover:bg-pink-200 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
+                }`}
+              >
+                {isMathSprintDone ? '✓ Synced' : 'Complete'}
+              </button>
             </div>
-          </div>
-          <ExternalLink className="w-4 h-4 text-zinc-400" />
-        </div>
+          );
+        })()}
       </div>
     </div>
   );

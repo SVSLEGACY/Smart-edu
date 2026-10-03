@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bookmark, ArrowRight, Play, CheckCircle2 } from 'lucide-react';
+import { Bookmark, ArrowRight, Play, CheckCircle2, Sparkles, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Course, CategoryFilter, UpcomingLesson } from '../../types';
 import { Avatar, AvatarStack } from '../common/Avatar';
@@ -10,6 +10,9 @@ interface CourseDashboardProps {
   upcomingLessons: UpcomingLesson[];
   onSelectCourse: (courseId: string) => void;
   onSelectLesson?: (lesson: UpcomingLesson) => void;
+  completedTaskIds?: string[];
+  onOpenMobileCompanion?: () => void;
+  onResetTasks?: () => void;
 }
 
 export const CourseDashboard: React.FC<CourseDashboardProps> = ({
@@ -18,6 +21,9 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
   upcomingLessons,
   onSelectCourse,
   onSelectLesson,
+  completedTaskIds = [],
+  onOpenMobileCompanion,
+  onResetTasks,
 }) => {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All courses');
   const [bookmarkedMap, setBookmarkedMap] = useState<Record<string, boolean>>({
@@ -42,8 +48,79 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
     }));
   };
 
+  // Map of course ID to number of synced tasks completed on mobile
+  const taskCourseMap: Record<string, string> = {
+    'sch-1': 'course-creative-writing',
+    'sch-2': 'course-public-speaking',
+    'sch-3': 'course-microsoft-future-ready',
+    'sch-4': 'course-digital-illustration',
+    'sch-5': 'course-digital-illustration',
+    'quick-dev': 'course-digital-illustration',
+    'quick-math': 'course-public-speaking',
+  };
+
+  const getSyncedCountForCourse = (courseId: string) => {
+    return completedTaskIds.filter((taskId) => taskCourseMap[taskId] === courseId).length;
+  };
+
   return (
-    <div className="flex-1 p-6 sm:p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
+    <div className="flex-1 p-6 sm:p-8 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      {/* Live Sync Banner across Desktop & Mobile Companion */}
+      <div className="rounded-2xl p-4 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-emerald-500/10 border border-orange-500/25 dark:border-orange-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/30">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
+                Mobile Task Progress Live Sync
+              </h4>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Active
+              </span>
+            </div>
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5">
+              {completedTaskIds.length > 0 ? (
+                <span>
+                  <strong className="text-emerald-600 dark:text-emerald-400">
+                    {completedTaskIds.length} tasks completed
+                  </strong>{' '}
+                  on Mobile Companion. Your course lesson counts and mastery progress are automatically synchronized in real time!
+                </span>
+              ) : (
+                <span>
+                  Completing daily study tasks or quick sprints on the Mobile Companion App automatically updates course progress here.
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {completedTaskIds.length > 0 && onResetTasks && (
+            <button
+              onClick={onResetTasks}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 bg-white/80 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer"
+              title="Reset completed tasks for testing"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Reset Sync</span>
+            </button>
+          )}
+          {onOpenMobileCompanion && (
+            <button
+              onClick={onOpenMobileCompanion}
+              className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#FF533D] hover:bg-[#FF4128] text-white shadow-xs transition-transform active:scale-95 flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Open Mobile Tasks</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Top Section: "My courses" + Category Filter Pills */}
       <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight font-heading">
@@ -110,9 +187,17 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
               >
                 {/* Card Header: Category Tag & Bookmark */}
                 <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tagBg}`}>
-                    {course.category}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tagBg}`}>
+                      {course.category}
+                    </span>
+                    {getSyncedCountForCourse(course.id) > 0 && (
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-xs animate-in fade-in zoom-in duration-200">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>+{getSyncedCountForCourse(course.id)} synced</span>
+                      </span>
+                    )}
+                  </div>
 
                   <button
                     onClick={(e) => toggleBookmark(e, course.id)}
@@ -135,16 +220,24 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
                 {/* Progress Details */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-200">
-                    <span>Progress</span>
+                    <span className="flex items-center gap-1.5">
+                      <span>Progress</span>
+                      {getSyncedCountForCourse(course.id) > 0 && (
+                        <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                          (⚡ Synced)
+                        </span>
+                      )}
+                    </span>
                     <span className="font-mono tabular-nums">
-                      {course.progressLessons}/{course.totalLessons} lessons
+                      {course.progressLessons}/{course.totalLessons} lessons ({progressPercent}%)
                     </span>
                   </div>
 
                   {/* Progress Bar with dark fill like screenshot */}
                   <div className="w-full h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
                     <motion.div
-                      initial={{ width: 0 }}
+                      key={course.progressLessons}
+                      initial={false}
                       animate={{ width: `${progressPercent}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                       className="h-full bg-zinc-900 dark:bg-white rounded-full"
@@ -201,41 +294,58 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
 
             {/* Next Lessons Items (from Image 1) */}
             <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-              {upcomingLessons.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    onSelectLesson?.(item);
-                    onSelectCourse(item.courseId);
-                  }}
-                  className="grid grid-cols-12 items-center py-3.5 px-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
-                >
-                  {/* Lesson Number, Title, Course Subtitle */}
-                  <div className="col-span-7 sm:col-span-6 pr-2">
-                    <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-orange-500 transition-colors truncate">
-                      {item.number}. {item.title}
-                    </h4>
-                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
-                      {item.courseTitle}
-                    </p>
-                  </div>
+              {upcomingLessons.map((item, idx) => {
+                const isLessonDone = (item as any).isCompleted;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      onSelectLesson?.(item);
+                      onSelectCourse(item.courseId);
+                    }}
+                    className="grid grid-cols-12 items-center py-3.5 px-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group"
+                  >
+                    {/* Lesson Number, Title, Course Subtitle */}
+                    <div className="col-span-7 sm:col-span-6 pr-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4
+                          className={`text-xs sm:text-sm font-bold transition-colors truncate ${
+                            isLessonDone
+                              ? 'line-through text-zinc-400 dark:text-zinc-500'
+                              : 'text-zinc-900 dark:text-zinc-100 group-hover:text-orange-500'
+                          }`}
+                        >
+                          {item.number}. {item.title}
+                        </h4>
+                        {isLessonDone && (
+                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span>Done on mobile</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+                        {item.courseTitle}
+                      </p>
+                    </div>
 
-                  {/* Teacher: Avatar + Name */}
-                  <div className="col-span-3 sm:col-span-4 flex items-center gap-2">
-                    <Avatar name={item.teacherName} size="xs" colorIndex={idx + 1} />
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate hidden sm:inline">
-                      {item.teacherName}
-                    </span>
-                  </div>
+                    {/* Teacher: Avatar + Name */}
+                    <div className="col-span-3 sm:col-span-4 flex items-center gap-2">
+                      <Avatar name={item.teacherName} size="xs" colorIndex={idx + 1} />
+                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate hidden sm:inline">
+                        {item.teacherName}
+                      </span>
+                    </div>
 
-                  {/* Duration */}
-                  <div className="col-span-2 text-right">
-                    <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 font-mono tabular-nums">
-                      {item.duration}
-                    </span>
+                    {/* Duration */}
+                    <div className="col-span-2 text-right">
+                      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 font-mono tabular-nums">
+                        {item.duration}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -252,16 +362,46 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
             </span>
 
             {/* Tag */}
-            <div className="mt-3">
+            <div className="mt-3 flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FED867] text-zinc-900">
                 {recommendedCourse.category}
               </span>
+              {getSyncedCountForCourse(recommendedCourse.id) > 0 && (
+                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-xs">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>+{getSyncedCountForCourse(recommendedCourse.id)} synced</span>
+                </span>
+              )}
             </div>
 
             {/* Title */}
             <h3 className="text-xl font-extrabold text-white mt-4 font-heading leading-tight tracking-tight">
               {recommendedCourse.title}
             </h3>
+
+            {/* Synced Progress indicator for Recommended Course */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1.5">
+                <span>Course Progress</span>
+                <span className="font-mono tabular-nums">
+                  {recommendedCourse.progressLessons}/{recommendedCourse.totalLessons} lessons (
+                  {Math.round((recommendedCourse.progressLessons / recommendedCourse.totalLessons) * 100)}%)
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden">
+                <motion.div
+                  key={recommendedCourse.progressLessons}
+                  initial={false}
+                  animate={{
+                    width: `${Math.round(
+                      (recommendedCourse.progressLessons / recommendedCourse.totalLessons) * 100
+                    )}%`,
+                  }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  className="h-full bg-[#FED867] rounded-full"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Bottom Area: Social Proof + Button */}

@@ -138,7 +138,7 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
             onClick={onOpenMobileCompanion}
             aria-label="Open Mobile Companion"
             className="w-10 h-10 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center transition-all cursor-pointer hover:scale-105"
-            title="Launch Mobile Companion App (Len)"
+            title="Launch Phone View (Synced Study Tasks & Quizzes)"
           >
             <Sparkles className="w-4 h-4" />
           </button>

@@ -90,4 +90,7 @@ export interface ScheduleItem {
   duration: string;
   icon?: string;
   note?: string;
+  isCompleted?: boolean;
+  courseId?: string;
+  lessonTitle?: string;
 }
