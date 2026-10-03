@@ -87,6 +87,7 @@ export interface Badge {
   category: 'python-core' | 'python-syntax' | 'algorithms' | 'streak' | 'mastery';
   tier: 'bronze' | 'silver' | 'gold' | 'diamond';
   icon: string;
+  symbol: string;
   color: string;
   xpReward: number;
   requiredTopicId?: string;

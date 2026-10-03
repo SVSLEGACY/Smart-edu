@@ -166,14 +166,16 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
 
                 {/* Badge Achievement Callout (if present) */}
                 {associatedBadge && (
-                  <div className="mt-3 p-2 rounded-xl bg-black/5 border border-black/10 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-sm">{associatedBadge.icon}</span>
+                  <div className="mt-3 p-2 rounded-xl bg-black/5 border border-black/10 flex items-center justify-between text-xs backdrop-blur-xs">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-6 h-6 rounded-lg bg-black/10 flex items-center justify-center text-sm shadow-xs shrink-0 select-none">
+                        {associatedBadge.symbol}
+                      </span>
                       <span className="font-bold text-zinc-950 truncate text-[11px]">
                         {associatedBadge.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-zinc-900 shrink-0">
+                    <span className="text-[10px] font-mono font-bold text-zinc-900 shrink-0 px-2 py-0.5 rounded-md bg-black/10">
                       {badgeProgress?.completedCount}/{badgeProgress?.totalCount}
                     </span>
                   </div>

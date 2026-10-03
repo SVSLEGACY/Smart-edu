@@ -57,28 +57,22 @@ export const Badges: React.FC<BadgesProps> = ({
     return true;
   });
 
-  const renderBadgeIcon = (iconName: string, isUnlocked: boolean, color: string) => {
-    const iconProps = {
-      className: `w-6 h-6 sm:w-7 sm:h-7 transition-transform group-hover:scale-110 ${
-        isUnlocked ? 'text-white' : 'text-zinc-400 dark:text-zinc-500'
-      }`,
-    };
-
-    switch (iconName) {
-      case 'Repeat':
-        return <Repeat {...iconProps} />;
-      case 'Scissors':
-        return <Scissors {...iconProps} />;
-      case 'ShieldAlert':
-        return <ShieldAlert {...iconProps} />;
-      case 'Zap':
-        return <Zap {...iconProps} />;
-      case 'Crown':
-        return <Crown {...iconProps} />;
-      case 'Sparkles':
-      default:
-        return <Sparkles {...iconProps} />;
-    }
+  const renderBadgeIcon = (iconName: string, isUnlocked: boolean, color: string, symbol?: string) => {
+    return (
+      <div className="flex items-center justify-center relative select-none">
+        {symbol ? (
+          <span className="text-2xl sm:text-3xl filter drop-shadow-sm transition-transform duration-300 group-hover:scale-125">
+            {symbol}
+          </span>
+        ) : (
+          <Sparkles
+            className={`w-6 h-6 sm:w-7 sm:h-7 transition-transform group-hover:scale-110 ${
+              isUnlocked ? 'text-white' : 'text-zinc-400 dark:text-zinc-500'
+            }`}
+          />
+        )}
+      </div>
+    );
   };
 
   const getTierBadgeStyle = (tier: Badge['tier']) => {
@@ -280,7 +274,7 @@ export const Badges: React.FC<BadgesProps> = ({
                         backgroundColor: isUnlocked ? badge.color : undefined,
                       }}
                     >
-                      {renderBadgeIcon(badge.icon, isUnlocked, badge.color)}
+                      {renderBadgeIcon(badge.icon, isUnlocked, badge.color, badge.symbol)}
 
                       {/* Small unlocked star indicator */}
                       {isUnlocked && (
@@ -415,7 +409,8 @@ export const Badges: React.FC<BadgesProps> = ({
                   {renderBadgeIcon(
                     selectedBadgeProgress.badge.icon,
                     selectedBadgeProgress.isUnlocked,
-                    selectedBadgeProgress.badge.color
+                    selectedBadgeProgress.badge.color,
+                    selectedBadgeProgress.badge.symbol
                   )}
                   {selectedBadgeProgress.isUnlocked && (
                     <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center shadow-md">
