@@ -7,7 +7,6 @@ import { pythonTopicQuizzes } from '../../data/pythonQuizzes';
 import { TopicQuizModal } from './TopicQuizModal';
 import { Badges } from './Badges';
 import { allBadges, calculateBadgeProgress } from '../../data/badgesData';
-import { DifficultySelector } from './DifficultySelector';
 import { useDifficulty } from '../../context/DifficultyContext';
 
 interface CourseDashboardProps {
@@ -66,32 +65,7 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
 
   return (
     <div className="flex-1 p-6 sm:p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
-      {/* 1. Global Difficulty Banner: Python Mastery Curriculum */}
-      <section className="flex flex-col md:flex-row md:items-center justify-between gap-5 bg-white dark:bg-[#1E1E22] p-6 sm:p-7 rounded-[28px] border border-zinc-200/90 dark:border-zinc-800 shadow-sm relative overflow-hidden">
-        <div className="flex flex-col gap-1.5 z-10">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#FF533D]/10 text-[#FF533D]">
-              Misconception Diagnostic Engine
-            </span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getDifficultyBadgeClasses()}`}>
-              Active: {difficulty}
-            </span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight font-heading">
-            Python Mastery Curriculum
-          </h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed">
-            Select your difficulty level. The diagnostic evaluator pinpoints student misconceptions, provides targeted explanations, and dynamically generates follow-up reassessment challenges matching your selected complexity.
-          </p>
-        </div>
-
-        {/* Difficulty Toggle Pill Group */}
-        <div className="z-10 self-start md:self-auto shrink-0">
-          <DifficultySelector compact />
-        </div>
-      </section>
-
-      {/* 2. Python Quiz Tracks Section Header & Filter Pills */}
+      {/* 1. Python Quiz Tracks Section Header & Filter Pills */}
       <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h3 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight font-heading">
           Python Quiz Tracks

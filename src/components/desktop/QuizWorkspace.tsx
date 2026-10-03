@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import {
   Sparkles,
+  Flame,
+  Zap,
+  ArrowRight,
   Code2,
   ListFilter,
   RotateCcw,
@@ -22,7 +25,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Course, TopicQuiz, TopicQuizQuestion, DifficultyLevel } from '../../types';
 import { pythonTopicQuizzes } from '../../data/pythonQuizzes';
 import { useDifficulty } from '../../context/DifficultyContext';
-import { DifficultySelector } from './DifficultySelector';
 import { InterventionPanel } from './InterventionPanel';
 import { diagnoseStudentSubmission } from '../../services/diagnosticEngine';
 import { DiagnosticResult } from '../../types/tutor';
@@ -79,6 +81,9 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   const currentQuiz: TopicQuiz =
     pythonTopicQuizzes[selectedTopicKey] || pythonTopicQuizzes[allTopicKeys[0]];
 
+  // Ask quiz difficulty level when quiz workshop starts
+  const [showDifficultyPrompt, setShowDifficultyPrompt] = useState<boolean>(true);
+
   // The active difficulty level dictates which questions are served to the student
   const [filterByDifficulty, setFilterByDifficulty] = useState<boolean>(true);
 
@@ -97,6 +102,12 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   );
   const currentQuestion: TopicQuizQuestion =
     activeQuestions[safeQuestionIndex] || activeQuestions[0];
+
+  const handleSelectDifficultyAndStart = (lvl: DifficultyLevel) => {
+    setDifficulty(lvl);
+    setShowDifficultyPrompt(false);
+    setCurrentQuestionIndex(0);
+  };
 
   // Reset index when track or difficulty changes
   useEffect(() => {
@@ -272,16 +283,19 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getDifficultyBadgeClasses()}`}>
                 {difficulty} Complexity
               </span>
+              <button
+                type="button"
+                onClick={() => setShowDifficultyPrompt(true)}
+                className="text-[11px] font-bold text-[#FF533D] hover:underline cursor-pointer flex items-center gap-1"
+                title="Change difficulty level"
+              >
+                <span>Change Level</span>
+              </button>
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white font-heading mt-1">
               {currentQuiz.topicName}
             </h1>
           </div>
-        </div>
-
-        {/* Difficulty Selector Bound to Global State */}
-        <div className="flex items-center gap-3 self-start md:self-auto">
-          <DifficultySelector compact />
         </div>
       </div>
 
@@ -768,6 +782,168 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
         }}
         onAdvanceNext={handleAdvanceNext}
       />
+
+      {/* Quiz Difficulty Level Selection Prompt Modal (Shown when workshop starts) */}
+      <AnimatePresence>
+        {showDifficultyPrompt && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white dark:bg-[#1E1E22] rounded-[32px] border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 max-w-3xl w-full shadow-2xl relative my-8 overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex flex-col gap-1.5 mb-6 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#FF533D]/10 text-[#FF533D]">
+                    Quiz Workshop Setup
+                  </span>
+                  <span className="text-xs font-semibold text-zinc-400">
+                    Topic: {currentQuiz.topicName}
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white font-heading">
+                  Select Quiz Difficulty Level
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-xl">
+                  Choose your target challenge level to begin. Questions, code requirements, and AI diagnostic interventions will be served depending upon the difficulty selected.
+                </p>
+              </div>
+
+              {/* 3 Difficulty Option Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Easy Card */}
+                <div
+                  onClick={() => handleSelectDifficultyAndStart('Easy')}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
+                    difficulty === 'Easy'
+                      ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30 shadow-md'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:border-emerald-400 bg-zinc-50/60 dark:bg-zinc-800/40 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        Foundational
+                      </span>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">Easy</h3>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Core syntax, indentation semantics, assignment vs equality, and explicit type coercion.
+                    </p>
+                    <div className="pt-2 flex flex-wrap gap-1 text-[10px] text-zinc-500 font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M1 Indentation</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M2 Equality</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M10 Types</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="mt-5 w-full py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>Start Easy Quiz</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Medium Card */}
+                <div
+                  onClick={() => handleSelectDifficultyAndStart('Medium')}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
+                    difficulty === 'Medium'
+                      ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 shadow-md'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:border-amber-400 bg-zinc-50/60 dark:bg-zinc-800/40 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+                      <Flame className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                        Intermediate
+                      </span>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">Medium</h3>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      String immutability, list reference copies vs aliases, division precision, and boundary indexing.
+                    </p>
+                    <div className="pt-2 flex flex-wrap gap-1 text-[10px] text-zinc-500 font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M4 Immutability</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M7 Copy vs Ref</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M9 Indexing</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="mt-5 w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>Start Medium Quiz</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Difficult Card */}
+                <div
+                  onClick={() => handleSelectDifficultyAndStart('Difficult')}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
+                    difficulty === 'Difficult'
+                      ? 'border-[#FF533D] bg-orange-50/60 dark:bg-orange-950/30 shadow-md'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:border-[#FF533D] bg-zinc-50/60 dark:bg-zinc-800/40 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950 text-[#FF533D] flex items-center justify-center shadow-xs">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-[#FF533D] uppercase tracking-wider">
+                        Advanced
+                      </span>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">Difficult</h3>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Mutable default argument state leaks, global variable shadowing, and closure late binding.
+                    </p>
+                    <div className="pt-2 flex flex-wrap gap-1 text-[10px] text-zinc-500 font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M3 Mutable Defs</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">M5 Global Scope</span>
+                      <span className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">Closures</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="mt-5 w-full py-2.5 rounded-xl font-bold text-xs bg-[#FF533D] hover:bg-[#FF4128] text-white shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>Start Difficult Quiz</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Close / Skip button */}
+              <div className="mt-6 flex items-center justify-between text-xs text-zinc-400 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <span>Selected: <strong className="text-zinc-900 dark:text-white">{difficulty}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setShowDifficultyPrompt(false)}
+                  className="font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer hover:underline"
+                >
+                  Continue with {difficulty} →
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
