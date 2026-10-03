@@ -9,9 +9,11 @@ interface LearnifyHeaderProps {
   onSearch?: (query: string) => void;
   onSelectCourse?: (courseId: string) => void;
   onLaunchQuiz?: () => void;
+  onOpenStreak?: () => void;
   currentUser?: UserProfile;
   onLogout?: () => void;
   streak?: number;
+  completedTaskIds?: string[];
   courses: Course[];
 }
 
@@ -19,9 +21,11 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   onSearch,
   onSelectCourse,
   onLaunchQuiz,
+  onOpenStreak,
   currentUser = defaultUser,
   onLogout,
   streak,
+  completedTaskIds = [],
   courses,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,11 +130,11 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
           )}
         </div>
 
-        {/* Streak & Quiz Launcher Button */}
+        {/* Streak & Monthly Calendar Button */}
         <button
-          onClick={onLaunchQuiz}
+          onClick={() => onOpenStreak?.()}
           className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 dark:from-orange-950/40 dark:to-amber-950/40 dark:hover:from-orange-950/70 dark:hover:to-amber-950/70 border border-orange-200/80 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 group shrink-0"
-          title={`Active Learning Streak: ${streak ?? currentUser?.streak ?? 5} days 🔥 (Click to practice quizzes)`}
+          title={`Active Learning Streak: ${streak ?? currentUser?.streak ?? 5} days 🔥 (Click to view Monthly Streak Calendar)`}
         >
           <span className="relative flex items-center justify-center">
             <Flame className="w-4 h-4 text-[#FF533D] fill-[#FF533D] group-hover:scale-110 transition-transform shrink-0" />

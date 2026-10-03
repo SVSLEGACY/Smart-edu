@@ -19,6 +19,7 @@ import { QuizWorkspace } from './components/desktop/QuizWorkspace';
 import { QuizEngine } from './components/desktop/QuizEngine';
 import { NotesAndBookmarksView } from './components/desktop/NotesAndBookmarksView';
 import { StudentLogin } from './components/desktop/StudentLogin';
+import { StreakActivityModal } from './components/desktop/StreakActivityModal';
 import { getStoredStudentSession, removeStudentSession } from './data/studentAccounts';
 import { UserProfile } from './types';
 
@@ -27,6 +28,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
   const [activeCourseId, setActiveCourseId] = useState<string>('course-python-syntax');
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [showStreakModal, setShowStreakModal] = useState<boolean>(false);
 
   // Completed task ids for course progress
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>(() => {
@@ -214,6 +216,8 @@ export default function App() {
               currentUser={currentUser}
               onLogout={handleLogout}
               streak={studentStreak}
+              completedTaskIds={completedTaskIds}
+              onOpenStreak={() => setShowStreakModal(true)}
             />
 
             {/* Screen Content with Smooth Animated Page Transitions */}
@@ -306,6 +310,16 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Global Student Activity Heatmap & Streak Calendar Modal */}
+      <StreakActivityModal
+        isOpen={showStreakModal}
+        onClose={() => setShowStreakModal(false)}
+        currentStreak={studentStreak}
+        completedTaskIds={completedTaskIds}
+        currentUser={currentUser}
+        onLaunchPractice={handleLaunchQuiz}
+      />
     </DifficultyProvider>
   );
 }
