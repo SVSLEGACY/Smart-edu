@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ScreenType, Course, UpcomingLesson } from './types';
+import { ScreenType, Course, UpcomingLesson, DifficultyLevel } from './types';
 import {
   coursesData,
   recommendedCourse,
@@ -46,36 +46,28 @@ export default function App() {
 
   // Map each task/quiz ID to its corresponding Python course
   const taskCourseMap: Record<string, string> = {
-    'lesson-slice-01': 'course-python-slicing',
-    'lesson-func-03': 'course-python-functions',
-    'lesson-comp-05': 'course-python-comprehensions',
-    'lesson-algo-02': 'course-python-algorithms',
-    'lesson-slice-04': 'course-python-slicing',
-    // Python Sequences Slicing Quizzes
-    'q-slice-01': 'course-python-slicing',
-    'q-slice-02': 'course-python-slicing',
-    'q-slice-03': 'course-python-slicing',
-    'q-slice-04': 'course-python-slicing',
-    'q-slice-05': 'course-python-slicing',
+    // CSV Track 1: Syntax & Indentation
+    'q-m1-indentation': 'course-python-syntax',
+    'q-m2-equality': 'course-python-syntax',
+    'q-m10-type-coercion': 'course-python-syntax',
+    'q-correct-accumulator': 'course-python-syntax',
+    'topic-complete-course-python-syntax': 'course-python-syntax',
+    // CSV Track 2: Sequences, Indexing & String Immutability
+    'q-m4-string-immutability': 'course-python-slicing',
+    'q-m9-index-boundary': 'course-python-slicing',
+    'q-slice-exclusive-stop': 'course-python-slicing',
+    'q-slice-step-reversal': 'course-python-slicing',
     'topic-complete-course-python-slicing': 'course-python-slicing',
-    // Python Functions & Scope Quizzes
-    'q-func-01': 'course-python-functions',
-    'q-func-02': 'course-python-functions',
-    'q-func-03': 'course-python-functions',
-    'q-func-04': 'course-python-functions',
-    'topic-complete-course-python-functions': 'course-python-functions',
-    // Python Comprehensions Quizzes
-    'q-comp-01': 'course-python-comprehensions',
-    'q-comp-02': 'course-python-comprehensions',
-    'q-comp-03': 'course-python-comprehensions',
-    'q-comp-04': 'course-python-comprehensions',
+    // CSV Track 3: Memory References, Copies & Math
+    'q-m7-list-copy': 'course-python-comprehensions',
+    'q-m8-integer-division': 'course-python-comprehensions',
+    'q-comp-dict-inversion': 'course-python-comprehensions',
     'topic-complete-course-python-comprehensions': 'course-python-comprehensions',
-    // Algorithmic Python Quizzes
-    'q-algo-01': 'course-python-algorithms',
-    'q-algo-02': 'course-python-algorithms',
-    'q-algo-03': 'course-python-algorithms',
-    'q-algo-04': 'course-python-algorithms',
-    'topic-complete-course-python-algorithms': 'course-python-algorithms',
+    // CSV Track 4: Scopes & Mutable Defaults
+    'q-m3-mutable-defaults': 'course-python-functions',
+    'q-m5-scope-confusion': 'course-python-functions',
+    'q-func-late-binding': 'course-python-functions',
+    'topic-complete-course-python-functions': 'course-python-functions',
   };
 
   const handleCompleteTask = (taskId: string, _courseId?: string) => {
@@ -139,8 +131,13 @@ export default function App() {
     } as any;
   });
 
-  const handleSelectCourse = (courseId: string) => {
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | undefined>(undefined);
+
+  const handleSelectCourse = (courseId: string, level?: DifficultyLevel) => {
     setActiveCourseId(courseId);
+    if (level) {
+      setSelectedDifficulty(level);
+    }
     setCurrentScreen('quiz-workspace');
   };
 
@@ -229,6 +226,7 @@ export default function App() {
                     <QuizWorkspace
                       courses={allCourses}
                       activeCourseId={activeCourseId}
+                      difficulty={selectedDifficulty}
                       completedTaskIds={completedTaskIds}
                       onCompleteTask={handleCompleteTask}
                       onBack={() => setCurrentScreen('dashboard')}

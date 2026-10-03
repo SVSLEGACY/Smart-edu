@@ -29,6 +29,16 @@ export interface TopicQuizQuestion {
   explanation: string;
   concept: string;
   commonMisconception?: string;
+  misconceptionId?: string;
+  learnerFlawedCode?: string;
+  errorTrace?: string;
+  studentExplanation?: string;
+  teachingGuide?: {
+    overview: string;
+    whyItHappens: string;
+    mentalModel: string;
+    keyTakeaway: string;
+  };
 }
 
 export interface TopicQuiz {

@@ -6,15 +6,17 @@ import {
   ListFilter,
   RotateCcw,
   Send,
-  HelpCircle,
   Lightbulb,
   CheckCircle2,
-  Flame,
-  ArrowRight,
   BookOpen,
   ChevronLeft,
   Copy,
   Check,
+  AlertTriangle,
+  Play,
+  Terminal,
+  HelpCircle,
+  GraduationCap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Course, TopicQuiz, TopicQuizQuestion, DifficultyLevel } from '../../types';
@@ -28,6 +30,7 @@ import { DiagnosticResult } from '../../types/tutor';
 export interface QuizWorkspaceProps {
   courses?: Course[];
   activeCourseId?: string;
+  difficulty?: DifficultyLevel; // Globally selected difficulty level passed from dashboard card
   completedTaskIds?: string[];
   onCompleteTask?: (taskId: string, courseId?: string) => void;
   onBack?: () => void;
@@ -36,11 +39,20 @@ export interface QuizWorkspaceProps {
 export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   courses = [],
   activeCourseId,
+  difficulty: propDifficulty,
   completedTaskIds = [],
   onCompleteTask,
   onBack,
 }) => {
-  const { difficulty, setDifficulty, getDifficultyBadgeClasses } = useDifficulty();
+  const { difficulty: globalDifficulty, setDifficulty, getDifficultyBadgeClasses } = useDifficulty();
+  const difficulty = propDifficulty || globalDifficulty;
+
+  // Sync prop difficulty to global context if passed directly
+  useEffect(() => {
+    if (propDifficulty && propDifficulty !== globalDifficulty) {
+      setDifficulty(propDifficulty);
+    }
+  }, [propDifficulty, globalDifficulty, setDifficulty]);
 
   // Topic selection
   const allTopicKeys = Object.keys(pythonTopicQuizzes);
@@ -53,6 +65,7 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [submissionMode, setSubmissionMode] = useState<'editor' | 'choice'>('choice');
+  const [activeTab, setActiveTab] = useState<'workspace' | 'teach'>('workspace');
   const [studentCode, setStudentCode] = useState<string>('');
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
   const [diagnosticResult, setDiagnosticResult] = useState<DiagnosticResult | null>(null);
@@ -60,12 +73,35 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   const [attemptCount, setAttemptCount] = useState<number>(1);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
+  const [flawedLoaded, setFlawedLoaded] = useState<boolean>(false);
 
   // Active quiz & question
   const currentQuiz: TopicQuiz =
     pythonTopicQuizzes[selectedTopicKey] || pythonTopicQuizzes[allTopicKeys[0]];
+
+  // The active difficulty level dictates which questions are served to the student
+  const [filterByDifficulty, setFilterByDifficulty] = useState<boolean>(true);
+
+  const questionsMatchingDifficulty = currentQuiz.questions.filter(
+    (q) => q.difficulty === difficulty
+  );
+
+  const activeQuestions =
+    filterByDifficulty && questionsMatchingDifficulty.length > 0
+      ? questionsMatchingDifficulty
+      : currentQuiz.questions;
+
+  const safeQuestionIndex = Math.min(
+    Math.max(0, currentQuestionIndex),
+    Math.max(0, activeQuestions.length - 1)
+  );
   const currentQuestion: TopicQuizQuestion =
-    currentQuiz.questions[currentQuestionIndex] || currentQuiz.questions[0];
+    activeQuestions[safeQuestionIndex] || activeQuestions[0];
+
+  // Reset index when track or difficulty changes
+  useEffect(() => {
+    setCurrentQuestionIndex(0);
+  }, [selectedTopicKey, difficulty]);
 
   // Initialize or reset starter code when question changes
   useEffect(() => {
@@ -73,6 +109,9 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
     setDiagnosticResult(null);
     setShowHint(false);
     setAttemptCount(1);
+    setFlawedLoaded(false);
+
+    if (!currentQuestion) return;
 
     const initialCode =
       currentQuestion.starterCode ||
@@ -85,7 +124,7 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
     } else {
       setSubmissionMode('choice');
     }
-  }, [currentQuestionIndex, selectedTopicKey]);
+  }, [safeQuestionIndex, selectedTopicKey, currentQuestion?.id]);
 
   // Adjust active topic if prop changes
   useEffect(() => {
@@ -96,8 +135,9 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   }, [activeCourseId]);
 
   const handleCopySnippet = () => {
-    if (currentQuestion.codeSnippet) {
-      navigator.clipboard?.writeText?.(currentQuestion.codeSnippet);
+    const textToCopy = currentQuestion.codeSnippet || currentQuestion.starterCode;
+    if (textToCopy) {
+      navigator.clipboard?.writeText?.(textToCopy);
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2000);
     }
@@ -109,8 +149,35 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
       currentQuestion.codeSnippet ||
       `# Write Python code for: ${currentQuestion.concept}\ndef solve():\n    pass\n`;
     setStudentCode(initialCode);
+    setFlawedLoaded(false);
   };
 
+  const handleLoadFlawedCode = () => {
+    if (currentQuestion.learnerFlawedCode) {
+      setSubmissionMode('editor');
+      setStudentCode(currentQuestion.learnerFlawedCode);
+      setFlawedLoaded(true);
+    }
+  };
+
+  // ===========================================================================
+  // 3. RE:LEARN DIAGNOSTIC API INTEGRATION (/api/evaluate)
+  // ---------------------------------------------------------------------------
+  // The payload sent to the backend MUST include:
+  //   1) student_code: The student's code or choice submission.
+  //   2) current_concept (problem topic): The specific concept under test.
+  //   3) difficulty: The user's globally selected difficulty level ("Easy" | "Medium" | "Difficult").
+  //
+  // ARCHITECTURAL RATIONALE:
+  // Our system trains an empirical model to analyze the code and identify the
+  // underlying misconception rather than just marking answers as incorrect.
+  //
+  // The 'difficulty' level parameter is strictly required so that:
+  //   - The AI generates a targeted intervention suited to the learner's tier.
+  //   - The AI dynamically generates a follow-up reassessment question that
+  //     strictly matches the user's selected difficulty level to determine
+  //     if the diagnosed misconception has actually been resolved.
+  // ===========================================================================
   const handleSubmitResponse = async () => {
     if (isEvaluating) return;
 
@@ -164,19 +231,16 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   };
 
   const handleApplyReassessment = (reassessmentQuestion: string) => {
-    // Switch to editor mode and seed the reassessment problem prompt
     setSubmissionMode('editor');
     const reassessmentStarter = `# REASSESSMENT CHALLENGE (${difficulty} Level):\n# ${reassessmentQuestion}\n\ndef solve_reassessment():\n    # Implement your corrected mental model:\n    pass\n`;
     setStudentCode(reassessmentStarter);
-    // Smoothly scroll editor into view
     window.scrollTo({ top: 180, behavior: 'smooth' });
   };
 
   const handleAdvanceNext = () => {
-    if (currentQuestionIndex + 1 < currentQuiz.questions.length) {
-      setCurrentQuestionIndex((prev) => prev + 1);
+    if (safeQuestionIndex + 1 < activeQuestions.length) {
+      setCurrentQuestionIndex(safeQuestionIndex + 1);
     } else {
-      // Loop or next topic
       const nextTopicIdx = (allTopicKeys.indexOf(selectedTopicKey) + 1) % allTopicKeys.length;
       setSelectedTopicKey(allTopicKeys[nextTopicIdx]);
       setCurrentQuestionIndex(0);
@@ -203,7 +267,7 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase bg-[#FF533D]/10 text-[#FF533D]">
-                Re:Learn Adaptive Quiz Workspace
+                Adaptive Misconception Learning & Testing
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getDifficultyBadgeClasses()}`}>
                 {difficulty} Complexity
@@ -251,246 +315,447 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
         })}
       </div>
 
-      {/* Main Workspace Grid (Left: Question Prompt & Context; Right: Code Editor / Options) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Question Prompt, Concept & Context (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-4 bg-white dark:bg-[#1E1E22] rounded-3xl p-6 border border-zinc-200/90 dark:border-zinc-800 shadow-sm">
-          {/* Question Stepper & Concept Tag */}
-          <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold text-[#FF533D]">
-                Question {currentQuestionIndex + 1} of {currentQuiz.questions.length}
+      {/* Dual Mode Tabs: "Test Knowledge (Workspace)" vs "Teach Me Concept (Deep-Dive)" */}
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab('workspace')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'workspace'
+                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-sm'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
+            }`}
+          >
+            <Code2 className="w-3.5 h-3.5" />
+            <span>Test Knowledge & Code</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('teach')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'teach'
+                ? 'bg-[#FF533D] text-white shadow-sm'
+                : 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 hover:bg-orange-100'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Teach Me This Concept</span>
+          </button>
+        </div>
+
+        {currentQuestion.learnerFlawedCode && activeTab === 'workspace' && (
+          <button
+            type="button"
+            onClick={handleLoadFlawedCode}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60 text-xs font-bold cursor-pointer transition-colors"
+            title="Load student misconception from empirical dataset into editor"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+            <span>{flawedLoaded ? 'Flawed Code Loaded' : 'Test Real Student Misconception'}</span>
+          </button>
+        )}
+      </div>
+
+      {/* View Mode 1: Concept Teaching Guide (Deep-Dive) */}
+      {activeTab === 'teach' && currentQuestion.teachingGuide && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#1E1E22] border border-zinc-200/90 dark:border-zinc-800 shadow-sm flex flex-col gap-6"
+        >
+          <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                Pedagogical Concept Breakdown
               </span>
-              <span className="text-zinc-300 dark:text-zinc-700">•</span>
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                Attempt #{attemptCount}
-              </span>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white mt-1">
+                {currentQuestion.concept}
+              </h2>
             </div>
 
-            {isCurrentQuestionDone && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>Mastered</span>
+            <button
+              type="button"
+              onClick={() => setActiveTab('workspace')}
+              className="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs cursor-pointer hover:scale-102 transition-transform"
+            >
+              Ready to Test Knowledge →
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Overview & Why it happens */}
+            <div className="flex flex-col gap-4">
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/70 dark:border-zinc-700/60">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                  1. How Python Behaves
+                </h4>
+                <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  {currentQuestion.teachingGuide.overview}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">
+                  2. Why Learners Fall Into This Misconception
+                </h4>
+                <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  {currentQuestion.teachingGuide.whyItHappens}
+                </p>
+              </div>
+            </div>
+
+            {/* Mental Model & Takeaway */}
+            <div className="flex flex-col gap-4">
+              <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-1">
+                  3. The Accurate Mental Model
+                </h4>
+                <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  {currentQuestion.teachingGuide.mentalModel}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/60">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 mb-1">
+                  4. Rule of Thumb / Key Takeaway
+                </h4>
+                <p className="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-200 leading-relaxed">
+                  {currentQuestion.teachingGuide.keyTakeaway}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Dataset Evidence Card */}
+          {currentQuestion.learnerFlawedCode && (
+            <div className="mt-2 p-5 rounded-2xl bg-zinc-950 text-zinc-100 border border-zinc-800 flex flex-col gap-3 font-mono text-xs">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-2 text-[11px] text-zinc-400 font-sans">
+                <span className="flex items-center gap-1.5 text-amber-400 font-bold">
+                  <Terminal className="w-4 h-4" />
+                  <span>Real Learner Misconception Trace from Empirical Dataset</span>
+                </span>
+                <span className="text-zinc-500">{currentQuestion.misconceptionId}</span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[10px] text-rose-400 font-sans uppercase font-bold block mb-1">
+                    Flawed Submission:
+                  </span>
+                  <pre className="text-rose-300 whitespace-pre font-mono p-3 bg-rose-950/30 rounded-xl border border-rose-900/50">
+                    {currentQuestion.learnerFlawedCode}
+                  </pre>
+                  {currentQuestion.studentExplanation && (
+                    <span className="text-[11px] text-zinc-400 font-sans mt-2 block italic">
+                      Student thought: "{currentQuestion.studentExplanation}"
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-emerald-400 font-sans uppercase font-bold block mb-1">
+                    Correct Pattern:
+                  </span>
+                  <pre className="text-emerald-300 whitespace-pre font-mono p-3 bg-emerald-950/30 rounded-xl border border-emerald-900/50">
+                    {currentQuestion.codeSnippet || currentQuestion.starterCode}
+                  </pre>
+                  {currentQuestion.errorTrace && (
+                    <span className="text-[11px] text-amber-300 font-mono mt-2 block">
+                      CPython Trace: {currentQuestion.errorTrace}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* View Mode 2: Test Knowledge (Workspace) */}
+      {activeTab === 'workspace' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Question Prompt, Concept & Context (5 Cols) */}
+          <div className="lg:col-span-5 flex flex-col gap-4 bg-white dark:bg-[#1E1E22] rounded-3xl p-6 border border-zinc-200/90 dark:border-zinc-800 shadow-sm">
+            {/* Question Stepper & Concept Tag */}
+            <div className="flex flex-col gap-2.5 border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold text-[#FF533D]">
+                    Question {safeQuestionIndex + 1} of {activeQuestions.length} ({difficulty})
+                  </span>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    Attempt #{attemptCount}
+                  </span>
+                </div>
+
+                {isCurrentQuestionDone && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Mastered</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Question Navigation Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                {activeQuestions.map((q, idx) => {
+                  const isCurrent = idx === safeQuestionIndex;
+                  const isDone = completedTaskIds.includes(q.id);
+                  return (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => setCurrentQuestionIndex(idx)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer select-none ${
+                        isCurrent
+                          ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
+                          : isDone
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-300/50'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                      }`}
+                      title={`${q.concept} (${q.difficulty || difficulty})`}
+                    >
+                      <span>Q{idx + 1}</span>
+                      <span className="text-[9px] uppercase opacity-75">({(q.difficulty || difficulty)[0]})</span>
+                      {isDone && <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                Concept Target: {currentQuestion.concept}
               </span>
+              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-relaxed">
+                {currentQuestion.question}
+              </h2>
+            </div>
+
+            {/* Reference Code Snippet if provided */}
+            {currentQuestion.codeSnippet && (
+              <div className="rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 overflow-hidden shadow-inner">
+                <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900/80 border-b border-zinc-800 text-[10px] text-zinc-400">
+                  <span className="flex items-center gap-1.5 font-bold uppercase text-orange-400">
+                    <Code2 className="w-3.5 h-3.5" />
+                    <span>Problem Context</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopySnippet}
+                    className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {copiedCode ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedCode ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <pre className="p-4 leading-relaxed whitespace-pre font-mono text-xs overflow-x-auto text-emerald-300">
+                  {currentQuestion.codeSnippet}
+                </pre>
+              </div>
+            )}
+
+            {/* Hint Expander */}
+            {currentQuestion.solutionHint && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowHint((prev) => !prev)}
+                  className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:underline cursor-pointer"
+                >
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{showHint ? 'Hide Pedagogical Nudge' : 'Need a Conceptual Nudge?'}</span>
+                </button>
+
+                <AnimatePresence>
+                  {showHint && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-2 p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-xs text-amber-900 dark:text-amber-200 leading-relaxed"
+                    >
+                      <span className="font-bold">Guiding clue: </span>
+                      {currentQuestion.solutionHint}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
-              Concept Target: {currentQuestion.concept}
-            </span>
-            <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white leading-relaxed">
-              {currentQuestion.question}
-            </h2>
-          </div>
-
-          {/* Reference Code Snippet if provided */}
-          {currentQuestion.codeSnippet && (
-            <div className="rounded-2xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 overflow-hidden shadow-inner">
-              <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900/80 border-b border-zinc-800 text-[10px] text-zinc-400">
-                <span className="flex items-center gap-1.5 font-bold uppercase text-orange-400">
-                  <Code2 className="w-3.5 h-3.5" />
-                  <span>Problem Context</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopySnippet}
-                  className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
-                >
-                  {copiedCode ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-                </button>
-              </div>
-              <pre className="p-4 leading-relaxed whitespace-pre font-mono text-xs overflow-x-auto text-emerald-300">
-                {currentQuestion.codeSnippet}
-              </pre>
-            </div>
-          )}
-
-          {/* Hint Expander */}
-          {currentQuestion.solutionHint && (
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => setShowHint((prev) => !prev)}
-                className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:underline cursor-pointer"
-              >
-                <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                <span>{showHint ? 'Hide Pedagogical Nudge' : 'Need a Conceptual Nudge?'}</span>
-              </button>
-
-              <AnimatePresence>
-                {showHint && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-2 p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-xs text-amber-900 dark:text-amber-200 leading-relaxed"
+          {/* Right Column: Code Editor (Monaco) or Multiple-Choice Form (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col gap-4 bg-white dark:bg-[#1E1E22] rounded-3xl p-6 border border-zinc-200/90 dark:border-zinc-800 shadow-sm">
+            {/* Submission Mode Selector (Choice vs Code Editor) */}
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                {currentQuestion.options && (
+                  <button
+                    type="button"
+                    onClick={() => setSubmissionMode('choice')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      submissionMode === 'choice'
+                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xs'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
+                    }`}
                   >
-                    <span className="font-bold">Guiding clue: </span>
-                    {currentQuestion.solutionHint}
-                  </motion.div>
+                    <ListFilter className="w-3.5 h-3.5" />
+                    <span>Multiple Choice</span>
+                  </button>
                 )}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
 
-        {/* Right Column: Code Editor (Monaco) or Multiple-Choice Form (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-4 bg-white dark:bg-[#1E1E22] rounded-3xl p-6 border border-zinc-200/90 dark:border-zinc-800 shadow-sm">
-          {/* Submission Mode Selector (Choice vs Code Editor) */}
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
-            <div className="flex items-center gap-2">
-              {currentQuestion.options && (
                 <button
                   type="button"
-                  onClick={() => setSubmissionMode('choice')}
+                  onClick={() => setSubmissionMode('editor')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    submissionMode === 'choice'
+                    submissionMode === 'editor'
                       ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xs'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
                   }`}
                 >
-                  <ListFilter className="w-3.5 h-3.5" />
-                  <span>Multiple Choice</span>
+                  <Code2 className="w-3.5 h-3.5" />
+                  <span>Monaco Python Editor</span>
                 </button>
-              )}
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setSubmissionMode('editor')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  submissionMode === 'editor'
-                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xs'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
-                }`}
-              >
-                <Code2 className="w-3.5 h-3.5" />
-                <span>Monaco Python Editor</span>
-              </button>
+              {submissionMode === 'editor' && (
+                <div className="flex items-center gap-2">
+                  {currentQuestion.learnerFlawedCode && (
+                    <button
+                      type="button"
+                      onClick={handleLoadFlawedCode}
+                      className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <AlertTriangle className="w-3 h-3" />
+                      <span>{flawedLoaded ? 'Flawed Code Set' : 'Load Dataset Bug'}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleResetCode}
+                    className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                    title="Reset starter template"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {submissionMode === 'editor' && (
-              <button
-                type="button"
-                onClick={handleResetCode}
-                className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-                title="Reset starter template"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset</span>
-              </button>
-            )}
-          </div>
+            {/* Multiple-Choice Form */}
+            {submissionMode === 'choice' && currentQuestion.options ? (
+              <div className="flex flex-col gap-2.5 py-1">
+                {currentQuestion.options.map((option, idx) => {
+                  const optionLetter = String.fromCharCode(65 + idx);
+                  const isSelected = selectedOptionIndex === idx;
 
-          {/* Multiple-Choice Form */}
-          {submissionMode === 'choice' && currentQuestion.options ? (
-            <div className="flex flex-col gap-2.5 py-1">
-              {currentQuestion.options.map((option, idx) => {
-                const optionLetter = String.fromCharCode(65 + idx);
-                const isSelected = selectedOptionIndex === idx;
-
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedOptionIndex(idx)}
-                    className={`w-full p-4 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer select-none ${
-                      isSelected
-                        ? 'bg-orange-50 dark:bg-orange-950/30 border-[#FF533D] text-zinc-950 dark:text-white shadow-xs'
-                        : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
-                    }`}
-                  >
-                    <span
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedOptionIndex(idx)}
+                      className={`w-full p-4 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer select-none ${
                         isSelected
-                          ? 'bg-[#FF533D] text-white'
-                          : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
+                          ? 'bg-orange-50 dark:bg-orange-950/30 border-[#FF533D] text-zinc-950 dark:text-white shadow-xs'
+                          : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
                       }`}
                     >
-                      {optionLetter}
+                      <span
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                          isSelected
+                            ? 'bg-[#FF533D] text-white'
+                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        {optionLetter}
+                      </span>
+                      <pre className="text-xs sm:text-sm font-mono whitespace-pre-wrap leading-relaxed flex-1">
+                        {option}
+                      </pre>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Monaco Code Editor Container */
+              <div className="flex flex-col gap-2">
+                <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-700/80 shadow-inner bg-[#1e1e1e]">
+                  <div className="px-4 py-2 bg-zinc-900 text-zinc-400 border-b border-zinc-800 flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-2 font-mono text-zinc-300">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                      <span>solution.py</span>
                     </span>
-                    <span className="text-xs sm:text-sm font-medium leading-relaxed flex-1">
-                      {option}
+                    <span className="font-sans text-[10px] text-zinc-500">
+                      Monaco Editor · Python 3.12 syntax
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            /* Monaco Code Editor Container */
-            <div className="flex flex-col gap-2">
-              <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-700/80 shadow-inner bg-[#1e1e1e]">
-                <div className="px-4 py-2 bg-zinc-900 text-zinc-400 border-b border-zinc-800 flex items-center justify-between text-[11px]">
-                  <span className="flex items-center gap-2 font-mono text-zinc-300">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-                    <span>solution.py</span>
-                  </span>
-                  <span className="font-sans text-[10px] text-zinc-500">
-                    Monaco Editor · Python 3.12 syntax
-                  </span>
-                </div>
+                  </div>
 
-                <div className="h-64 sm:h-72 w-full">
-                  <Editor
-                    height="100%"
-                    defaultLanguage="python"
-                    value={studentCode}
-                    onChange={(val) => setStudentCode(val || '')}
-                    theme="vs-dark"
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 13,
-                      lineNumbers: 'on',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      tabSize: 4,
-                      wordWrap: 'on',
-                      padding: { top: 12, bottom: 12 },
-                    }}
-                  />
+                  <div className="h-64 sm:h-72 w-full">
+                    <Editor
+                      height="100%"
+                      defaultLanguage="python"
+                      value={studentCode}
+                      onChange={(val) => setStudentCode(val || '')}
+                      theme="vs-dark"
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 13,
+                        lineNumbers: 'on',
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        tabSize: 4,
+                        wordWrap: 'on',
+                        padding: { top: 12, bottom: 12 },
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
+            )}
+
+            {/* Submit Action Bar */}
+            <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <span className="text-xs text-zinc-400">
+                Evaluated against empirical misconception dataset
+              </span>
+
+              <button
+                type="button"
+                onClick={handleSubmitResponse}
+                disabled={
+                  isEvaluating ||
+                  (submissionMode === 'choice' && selectedOptionIndex === null) ||
+                  (submissionMode === 'editor' && !studentCode.trim())
+                }
+                className={`px-6 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
+                  !isEvaluating &&
+                  ((submissionMode === 'choice' && selectedOptionIndex !== null) ||
+                    (submissionMode === 'editor' && studentCode.trim()))
+                    ? 'bg-[#FF533D] hover:bg-[#FF4128] text-white shadow-orange-500/20 active:scale-95 cursor-pointer'
+                    : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
+                }`}
+              >
+                {isEvaluating ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>AI Diagnosing Misconception...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Submit Response</span>
+                  </>
+                )}
+              </button>
             </div>
-          )}
-
-          {/* Submit Action Bar */}
-          <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
-            <span className="text-xs text-zinc-400">
-              Evaluated against real edge-case trace models
-            </span>
-
-            <button
-              type="button"
-              onClick={handleSubmitResponse}
-              disabled={
-                isEvaluating ||
-                (submissionMode === 'choice' && selectedOptionIndex === null) ||
-                (submissionMode === 'editor' && !studentCode.trim())
-              }
-              className={`px-6 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
-                !isEvaluating &&
-                ((submissionMode === 'choice' && selectedOptionIndex !== null) ||
-                  (submissionMode === 'editor' && studentCode.trim()))
-                  ? 'bg-[#FF533D] hover:bg-[#FF4128] text-white shadow-orange-500/20 active:scale-95 cursor-pointer'
-                  : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
-              }`}
-            >
-              {isEvaluating ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>AI Diagnosing Misconception...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Submit Response</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Initially Hidden Intervention Panel (Appears once AI diagnostic returns) */}
       <InterventionPanel
