@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Bookmark, ArrowRight, Play, CheckCircle2, Sparkles, RefreshCw } from 'lucide-react';
+import { Bookmark, ArrowRight, Play, CheckCircle2, Sparkles, RefreshCw, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Course, CategoryFilter, UpcomingLesson } from '../../types';
 import { Avatar, AvatarStack } from '../common/Avatar';
+import { pythonTopicQuizzes } from '../../data/pythonQuizzes';
+import { TopicQuizModal } from './TopicQuizModal';
 
 interface CourseDashboardProps {
   courses: Course[];
@@ -24,14 +26,15 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
   onResetTasks,
 }) => {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All courses');
+  const [selectedQuizCourseId, setSelectedQuizCourseId] = useState<string | null>(null);
   const [bookmarkedMap, setBookmarkedMap] = useState<Record<string, boolean>>({
-    'course-creative-writing': true,
-    'course-digital-illustration': false,
-    'course-public-speaking': false,
-    'course-microsoft-future-ready': false,
+    'course-python-comprehensions': true,
+    'course-python-functions': false,
+    'course-python-slicing': false,
+    'course-python-algorithms': false,
   });
 
-  const categories: CategoryFilter[] = ['All courses', 'Marketing', 'Computer Science', 'Psychology'];
+  const categories: CategoryFilter[] = ['All courses', 'Core & Slicing', 'Functions & Scope', 'Data Structures'];
 
   const filteredCourses =
     activeCategory === 'All courses'
@@ -82,21 +85,21 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
             const isBookmarked = bookmarkedMap[course.id];
             const progressPercent = Math.round((course.progressLessons / course.totalLessons) * 100);
 
-            // Styling customizer to match the precise colors from Image 1:
-            // Card 1: Marketing / Creative Writing -> Warm Yellow #FED867
-            // Card 2: Computer Science / Digital Illustration -> Soft Lilac #D7C7F9
-            // Card 3: Psychology / Public Speaking -> Soft Sky Blue #BBE7FE
+            // Styling customizer for Python topics:
+            // Card 1: Data Structures (Comprehensions) -> Warm Yellow #FED867
+            // Card 2: Functions & Scope -> Soft Lilac #D7C7F9
+            // Card 3: Core & Slicing -> Soft Sky Blue #BBE7FE
             const bgClass =
-              course.category === 'Marketing'
+              course.category === 'Data Structures'
                 ? 'bg-[#FED867] dark:bg-[#382C10] dark:border-[#524117]'
-                : course.category === 'Computer Science'
+                : course.category === 'Functions & Scope'
                 ? 'bg-[#D7C7F9] dark:bg-[#282142] dark:border-[#3D3363]'
                 : 'bg-[#BBE7FE] dark:bg-[#18314A] dark:border-[#23486E]';
 
             const tagBg =
-              course.category === 'Marketing'
+              course.category === 'Data Structures'
                 ? 'bg-zinc-900 text-white'
-                : course.category === 'Computer Science'
+                : course.category === 'Functions & Scope'
                 ? 'bg-[#FED867] text-zinc-900 font-bold'
                 : 'bg-[#D7C7F9] text-zinc-900 font-bold';
 
@@ -112,11 +115,17 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
                 onClick={() => onSelectCourse(course.id)}
                 className={`rounded-3xl p-6 flex flex-col justify-between h-72 shadow-sm border border-black/5 dark:border-white/10 cursor-pointer relative transition-shadow hover:shadow-lg ${bgClass}`}
               >
-                {/* Card Header: Category Tag & Bookmark */}
+                {/* Card Header: Category Tag, Quiz Badge & Bookmark */}
                 <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tagBg}`}>
-                    {course.category}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tagBg}`}>
+                      {course.category}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/10 dark:bg-white/15 text-zinc-900 dark:text-white flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-orange-500" />
+                      <span>{course.quizzesCount || 3} Quizzes</span>
+                    </span>
+                  </div>
 
                   <button
                     onClick={(e) => toggleBookmark(e, course.id)}
@@ -157,20 +166,34 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Card Footer: Student Avatars & "Continue" Button */}
+                {/* Card Footer: Student Avatars & "Quiz" + "Continue" Buttons */}
                 <div className="flex items-center justify-between pt-2">
                   <AvatarStack count={course.enrolledStudentsCount} size="sm" />
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectCourse(course.id);
-                    }}
-                    className="px-5 py-2 rounded-full bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span>Continue</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuizCourseId(course.id);
+                      }}
+                      className="px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs shadow-xs border border-black/10 dark:border-white/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                      title="Practice Topic Quiz"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                      <span>Quiz</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectCourse(course.id);
+                      }}
+                      className="px-4 py-1.5 rounded-full bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Continue</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             );
@@ -262,20 +285,20 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
           </div>
         </div>
 
-        {/* Right 1 Col: Dark Recommendation Card (Matching Image 1) */}
-        <div className="rounded-3xl p-6 bg-[#212124] dark:bg-[#161618] border border-zinc-800 text-white flex flex-col justify-between shadow-lg relative overflow-hidden group">
+        {/* Right 1 Col: Recommendation Card matching theme */}
+        <div className="rounded-3xl p-6 bg-[#1E1E22] dark:bg-[#161619] border border-zinc-800/80 dark:border-zinc-800/90 text-white flex flex-col justify-between shadow-md hover:shadow-xl transition-all relative overflow-hidden group">
           {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 dark:bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
 
           {/* Subtitle */}
           <div>
-            <span className="text-xs font-medium text-zinc-400">
+            <span className="text-xs font-semibold text-zinc-400">
               New course matching your interests
             </span>
 
             {/* Tag */}
             <div className="mt-3">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FED867] text-zinc-900">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FED867] text-zinc-950 shadow-xs inline-block">
                 {recommendedCourse.category}
               </span>
             </div>
@@ -285,16 +308,16 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
               {recommendedCourse.title}
             </h3>
 
-            {/* Synced Progress indicator for Recommended Course */}
+            {/* Progress indicator for Recommended Course */}
             <div className="mt-4">
-              <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-zinc-300 mb-1.5">
                 <span>Course Progress</span>
-                <span className="font-mono tabular-nums">
+                <span className="font-mono tabular-nums font-bold text-white">
                   {recommendedCourse.progressLessons}/{recommendedCourse.totalLessons} lessons (
                   {Math.round((recommendedCourse.progressLessons / recommendedCourse.totalLessons) * 100)}%)
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-white/15 dark:bg-white/10 overflow-hidden">
                 <motion.div
                   key={recommendedCourse.progressLessons}
                   initial={false}
@@ -313,22 +336,46 @@ export const CourseDashboard: React.FC<CourseDashboardProps> = ({
           {/* Bottom Area: Social Proof + Button */}
           <div className="mt-6 flex flex-col gap-4">
             <div>
-              <span className="text-xs text-zinc-400 block mb-2 font-medium">
+              <span className="text-xs text-zinc-400 block mb-2 font-semibold">
                 They are already studying
               </span>
               <AvatarStack count={recommendedCourse.enrolledStudentsCount} size="sm" />
             </div>
 
-            <button
-              onClick={() => onSelectCourse(recommendedCourse.id)}
-              className="w-full py-3 rounded-2xl bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-sm shadow-lg shadow-orange-600/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98"
-            >
-              <span>More details</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setSelectedQuizCourseId(recommendedCourse.id)}
+                className="flex-1 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs border border-zinc-700 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                title="Practice Topic Quiz"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Topic Quiz</span>
+              </button>
+
+              <button
+                onClick={() => onSelectCourse(recommendedCourse.id)}
+                className="flex-1 py-3 rounded-2xl bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>More details</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Interactive Topic Quiz Modal */}
+      <AnimatePresence>
+        {selectedQuizCourseId && (
+          <TopicQuizModal
+            quiz={
+              pythonTopicQuizzes[selectedQuizCourseId] ||
+              pythonTopicQuizzes['course-python-slicing']
+            }
+            onClose={() => setSelectedQuizCourseId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

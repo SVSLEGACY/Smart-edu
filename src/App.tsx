@@ -21,7 +21,7 @@ import { NotesAndBookmarksView } from './components/desktop/NotesAndBookmarksVie
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
-  const [activeCourseId, setActiveCourseId] = useState<string>('course-public-speaking');
+  const [activeCourseId, setActiveCourseId] = useState<string>('course-python-slicing');
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   // Completed task ids for course progress
@@ -40,15 +40,18 @@ export default function App() {
     return [];
   });
 
-  // Map each task ID to its corresponding course
+  // Map each task/quiz ID to its corresponding Python course
   const taskCourseMap: Record<string, string> = {
-    'sch-1': 'course-creative-writing',
-    'sch-2': 'course-public-speaking',
-    'sch-3': 'course-microsoft-future-ready',
-    'sch-4': 'course-digital-illustration',
-    'sch-5': 'course-digital-illustration',
-    'quick-dev': 'course-digital-illustration',
-    'quick-math': 'course-public-speaking',
+    'lesson-slice-01': 'course-python-slicing',
+    'lesson-func-03': 'course-python-functions',
+    'lesson-comp-05': 'course-python-comprehensions',
+    'lesson-algo-02': 'course-python-algorithms',
+    'lesson-slice-04': 'course-python-slicing',
+    'q-slice-01': 'course-python-slicing',
+    'q-slice-02': 'course-python-slicing',
+    'q-func-01': 'course-python-functions',
+    'q-comp-01': 'course-python-comprehensions',
+    'q-algo-01': 'course-python-algorithms',
   };
 
   const handleResetTasks = () => {
@@ -85,11 +88,7 @@ export default function App() {
 
   // Sync upcoming lessons completion state
   const syncedUpcomingLessons: UpcomingLesson[] = upcomingLessonsData.map((lesson) => {
-    const isDone =
-      (lesson.id === 'lesson-cw-01' && completedTaskIds.includes('sch-1')) ||
-      (lesson.id === 'lesson-ai-05' &&
-        (completedTaskIds.includes('sch-4') || completedTaskIds.includes('sch-5'))) ||
-      (lesson.id === 'lesson-ps-11' && completedTaskIds.includes('sch-2'));
+    const isDone = completedTaskIds.includes(lesson.id);
     return {
       ...lesson,
       isCompleted: isDone,

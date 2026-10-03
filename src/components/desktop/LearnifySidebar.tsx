@@ -30,7 +30,7 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
         <button
           onClick={() => onNavigate('dashboard')}
           className="w-11 h-11 rounded-2xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-all cursor-pointer"
-          title="Learnify Home"
+          title="RE:LEARN Home"
         >
           {/* 4 dots grid icon from screenshot */}
           <div className="grid grid-cols-2 gap-1.5 p-1">

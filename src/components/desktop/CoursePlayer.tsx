@@ -13,10 +13,15 @@ import {
   FileText,
   Send,
   Sparkles,
+  AlertTriangle,
+  Lightbulb,
+  Code2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Course, LessonChapter, SubLesson, VideoTimestamp } from '../../types';
 import { InstructorVideoThumbnail } from '../common/InstructorVideoThumbnail';
+import { pythonTopicQuizzes } from '../../data/pythonQuizzes';
+import { TopicQuizModal } from './TopicQuizModal';
 
 interface CoursePlayerProps {
   course: Course;
@@ -31,7 +36,8 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   timestamps,
   onBack,
 }) => {
-  const [activeTab, setActiveTab] = useState<'description' | 'materials' | 'hometask'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'materials' | 'hometask' | 'quiz'>('description');
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({
     'chapter-01': true,
   });
@@ -42,6 +48,8 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   const [sharedToast, setSharedToast] = useState<boolean>(false);
   const [taskSubmitted, setTaskSubmitted] = useState<boolean>(false);
   const [taskText, setTaskText] = useState<string>('');
+
+  const currentQuiz = pythonTopicQuizzes[course.id] || pythonTopicQuizzes['course-python-slicing'];
 
   // Simulated video playback timer
   useEffect(() => {
@@ -177,11 +185,11 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
           {/* Controls Bar under Video: Tabs & Share button */}
           <div className="flex items-center justify-between gap-4 pt-2 border-b border-zinc-200/80 dark:border-zinc-800 pb-4">
-            {/* Tabs: Description, Materials, Home task */}
-            <div className="flex items-center gap-2">
+            {/* Tabs: Description, Topic Quiz, Materials, Home task */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
               <button
                 onClick={() => setActiveTab('description')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'description'
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-sm'
                     : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
@@ -191,8 +199,20 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
               </button>
 
               <button
+                onClick={() => setActiveTab('quiz')}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === 'quiz'
+                    ? 'bg-[#FF533D] text-white shadow-sm'
+                    : 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 hover:bg-orange-100'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Topic Quiz ({currentQuiz.questions.length})</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('materials')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'materials'
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-sm'
                     : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
@@ -203,20 +223,20 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
               <button
                 onClick={() => setActiveTab('hometask')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'hometask'
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 shadow-sm'
                     : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
                 }`}
               >
-                Home task
+                Practice Task
               </button>
             </div>
 
             {/* Share Lesson Button (Matching Image 4) */}
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors cursor-pointer shrink-0"
             >
               <Share2 className="w-4 h-4 text-orange-500" />
               <span>Share lesson</span>
@@ -227,12 +247,10 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
           <div className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed">
             {activeTab === 'description' && (
               <div className="flex flex-col gap-5">
-                {/* Main Paragraph from Image 4 */}
+                {/* Main Paragraph */}
                 <p className="text-zinc-600 dark:text-zinc-300 text-sm sm:text-base leading-relaxed">
-                  Public speaking is an essential skill that plays a significant role in both
-                  personal and professional development. Whether you're delivering a speech at a
-                  conference, giving a presentation at work, or speaking at a social event, being
-                  able to communicate effectively in front of an audience is invaluable.
+                  {course.description ||
+                    'Master Python core sequence slicing, execution-time parameter evaluation, and idiomatic syntax with misconception-driven diagnostics and interactive topic quizzes.'}
                 </p>
 
                 {/* Timestamps Chapter Index (Clickable to Seek) */}
@@ -274,10 +292,63 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
               </div>
             )}
 
+            {/* Interactive Topic Quiz Tab */}
+            {activeTab === 'quiz' && (
+              <div className="flex flex-col gap-4 p-5 rounded-3xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800">
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-700">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                      Topic Quiz & Misconception Lab
+                    </span>
+                    <h4 className="text-base font-extrabold text-zinc-900 dark:text-white mt-0.5">
+                      {currentQuiz.topicName} ({currentQuiz.questions.length} Questions)
+                    </h4>
+                  </div>
+                  <button
+                    onClick={() => setIsQuizModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-[#FF533D] hover:bg-[#FF4128] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Launch Quiz Mode</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {currentQuiz.questions.map((q, idx) => (
+                    <div
+                      key={q.id}
+                      className="p-4 rounded-2xl bg-white dark:bg-[#1E1E22] border border-zinc-200 dark:border-zinc-700/80 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-zinc-400">Question {idx + 1}</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 uppercase">
+                          {q.type}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-white">
+                        {q.question}
+                      </p>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                          Focus: {q.concept}
+                        </span>
+                        <button
+                          onClick={() => setIsQuizModalOpen(true)}
+                          className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <span>Solve with Diagnostic Engine →</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'materials' && (
               <div className="flex flex-col gap-3">
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Supplementary course documents and workbook exercises for Lesson 01:
+                  Supplementary course documents and Python cheatsheets for Lesson 01:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
@@ -287,9 +358,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                       </div>
                       <div>
                         <h5 className="text-xs font-bold text-zinc-900 dark:text-white">
-                          Public Speaking Cheatsheet.pdf
+                          Python Slicing & Boundary Cheatsheet.pdf
                         </h5>
-                        <span className="text-[11px] text-zinc-400">2.4 MB · 12 Pages</span>
+                        <span className="text-[11px] text-zinc-400">1.8 MB · 8 Pages</span>
                       </div>
                     </div>
                     <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer">
@@ -304,9 +375,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                       </div>
                       <div>
                         <h5 className="text-xs font-bold text-zinc-900 dark:text-white">
-                          Speech Structure Template.docx
+                          Mutable Defaults & Scopes Reference.py
                         </h5>
-                        <span className="text-[11px] text-zinc-400">1.1 MB · Fillable</span>
+                        <span className="text-[11px] text-zinc-400">24 KB · Code Examples</span>
                       </div>
                     </div>
                     <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer">
@@ -320,10 +391,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
             {activeTab === 'hometask' && (
               <div className="flex flex-col gap-4">
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200">
-                  <h5 className="text-xs font-bold mb-1">Homework Prompt: 60-Second Hook</h5>
+                  <h5 className="text-xs font-bold mb-1">Homework Prompt: Safe Slicing & Sentinel Patterns</h5>
                   <p className="text-xs leading-relaxed">
-                    Record or write out an opening hook for an audience of prospective clients. Introduce
-                    a surprising statistic or relatable dilemma within the first 15 seconds.
+                    Write out why Python's slice syntax `items[start:stop]` never raises an `IndexError` when `stop` exceeds `len(items)`, and describe how to design a function that guarantees isolated list state using `tags=None`.
                   </p>
                 </div>
 
@@ -331,7 +401,7 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                   <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-200 flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <span className="text-xs font-semibold">
-                      Your response has been submitted! Teacher feedback will be available within 24 hours.
+                      Your Python explanation has been submitted! Teacher feedback will be available within 24 hours.
                     </span>
                   </div>
                 ) : (
@@ -339,7 +409,7 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                     <textarea
                       value={taskText}
                       onChange={(e) => setTaskText(e.target.value)}
-                      placeholder="Type your speech hook draft here..."
+                      placeholder="Type your explanation or Python code solution here..."
                       rows={3}
                       className="w-full p-3 rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-orange-500/30"
                     />
@@ -449,6 +519,16 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Interactive Topic Quiz Modal */}
+      <AnimatePresence>
+        {isQuizModalOpen && (
+          <TopicQuizModal
+            quiz={currentQuiz}
+            onClose={() => setIsQuizModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

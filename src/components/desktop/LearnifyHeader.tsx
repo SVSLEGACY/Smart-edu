@@ -49,8 +49,8 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
           <span className="text-zinc-500 dark:text-zinc-400 font-normal mr-1.5 text-base sm:text-lg">
             Welcome to
           </span>
-          <span className="text-[#FF533D] font-extrabold tracking-tight">Learn</span>
-          <span className="text-zinc-900 dark:text-white font-extrabold tracking-tight">ify</span>
+          <span className="text-[#FF533D] font-black tracking-tight">RE:</span>
+          <span className="text-zinc-900 dark:text-white font-black tracking-tight">LEARN</span>
         </h1>
       </div>
 

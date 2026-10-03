@@ -1,6 +1,6 @@
 export type ScreenType = 'dashboard' | 'course-player' | 'notes' | 'messages' | 'bookmarks' | 'settings';
 
-export type CategoryFilter = 'All courses' | 'Marketing' | 'Computer Science' | 'Psychology';
+export type CategoryFilter = 'All courses' | 'Core & Slicing' | 'Functions & Scope' | 'Data Structures';
 
 export interface UserProfile {
   name: string;
@@ -10,10 +10,30 @@ export interface UserProfile {
   notificationsCount: number;
 }
 
+export interface TopicQuizQuestion {
+  id: string;
+  question: string;
+  type: 'code' | 'choice';
+  options?: string[];
+  correctIndex?: number;
+  starterCode?: string;
+  solutionHint?: string;
+  explanation: string;
+  concept: string;
+  commonMisconception?: string;
+}
+
+export interface TopicQuiz {
+  courseId: string;
+  courseTitle: string;
+  topicName: string;
+  questions: TopicQuizQuestion[];
+}
+
 export interface Course {
   id: string;
   title: string;
-  category: 'Marketing' | 'Computer Science' | 'Psychology' | 'Business' | 'Design';
+  category: string;
   categoryColor: string;
   bgColorLight: string;
   bgColorDark: string;
@@ -27,6 +47,7 @@ export interface Course {
   totalLessons: number;
   enrolledStudentsCount: number;
   isBookmarked: boolean;
+  quizzesCount?: number;
   instructor: {
     name: string;
     avatar: string;
