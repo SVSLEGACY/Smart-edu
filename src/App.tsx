@@ -226,7 +226,6 @@ export default function App() {
                     <QuizWorkspace
                       courses={allCourses}
                       activeCourseId={activeCourseId}
-                      difficulty={selectedDifficulty}
                       completedTaskIds={completedTaskIds}
                       onCompleteTask={handleCompleteTask}
                       onBack={() => setCurrentScreen('dashboard')}

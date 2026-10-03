@@ -9,7 +9,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
     courseTitle: 'Idiomatic Comprehensions & Data Structures',
     topicName: 'Data Structures & Comprehensions',
     questions: [
-      // --- EASY ---
+      // ---------------------------- EASY ----------------------------
       {
         id: 'q-struct-tuple-immutability',
         type: 'choice',
@@ -58,8 +58,32 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           keyTakeaway: 'Never use mutable collections (lists, dicts, sets) as dictionary keys.',
         },
       },
+      {
+        id: 'q-struct-list-append',
+        type: 'choice',
+        difficulty: 'Easy',
+        concept: 'List.append() In-Place Return Value',
+        question: 'What is the value of result after executing list.append()?',
+        codeSnippet: `nums = [1, 2, 3]\nresult = nums.append(4)\nprint(result)`,
+        options: [
+          'None',
+          '[1, 2, 3, 4]',
+          '4',
+          'TypeError: append() does not return a value',
+        ],
+        correctIndex: 0,
+        explanation: 'In Python, mutating sequence methods like list.append(), list.sort(), and list.reverse() mutate the list in-place and return None. Setting result = nums.append(4) assigns None to result.',
+        commonMisconception: 'Assuming list.append() returns the new list like string or functional methods.',
+        solutionHint: 'Mutating list methods in Python return None.',
+        teachingGuide: {
+          overview: 'Python separates in-place mutators from value-returning functions.',
+          whyItHappens: 'JavaScript array methods or string methods often return the array.',
+          mentalModel: 'append() directly alters the existing list on your desk and hands back empty hands (None).',
+          keyTakeaway: 'Do not assign the result of lst.append() or lst.sort() back to a variable.',
+        },
+      },
 
-      // --- MEDIUM (from CSV) ---
+      // ---------------------------- MEDIUM ----------------------------
       {
         id: 'q-m7-list-copy',
         type: 'choice',
@@ -143,7 +167,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         },
       },
 
-      // --- DIFFICULT ---
+      // ---------------------------- DIFFICULT ----------------------------
       {
         id: 'q-comp-nested-leak',
         type: 'choice',
@@ -203,7 +227,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
     courseTitle: 'Python Functions, Scope & Mutable Defaults',
     topicName: 'Functions, Scope & Defaults',
     questions: [
-      // --- EASY ---
+      // ---------------------------- EASY ----------------------------
       {
         id: 'q-func-return-vs-print',
         type: 'choice',
@@ -225,11 +249,35 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           overview: 'print() shows text to the human; return hands data back to the program.',
           whyItHappens: 'Beginners see numbers printed on the terminal and assume the variable received that number.',
           mentalModel: 'print() is speaking out loud in a room. return is putting the answer in an envelope and handing it to the caller.',
-          keyTakeaway: 'Always use `return` when the calling code needs to compute with or store the result.',
+          keyTakeaway: 'Always use return when the calling code needs to compute with or store the result.',
+        },
+      },
+      {
+        id: 'q-func-default-value',
+        type: 'choice',
+        difficulty: 'Easy',
+        concept: 'Positional vs Default Parameters',
+        question: 'What is printed by calling greet() with only one argument?',
+        codeSnippet: `def greet(name, greeting="Hello"):\n    return f"{greeting}, {name}!"\n\nprint(greet("Alice"))`,
+        options: [
+          '"Hello, Alice!"',
+          'TypeError: greet() missing 1 required positional argument',
+          '"None, Alice!"',
+          '"Alice, Hello!"',
+        ],
+        correctIndex: 0,
+        explanation: 'Parameters with default values (greeting="Hello") are optional. If the caller does not supply an argument for that position, Python uses the default value.',
+        commonMisconception: 'Assuming all parameters without explicit caller values cause a TypeError.',
+        solutionHint: 'Parameters with = default values are optional.',
+        teachingGuide: {
+          overview: 'Default parameters provide fallback values when omitted by callers.',
+          whyItHappens: 'Beginners mix up positional arguments and keyword arguments.',
+          mentalModel: 'If you bring your own greeting, Python uses yours; if not, it uses the default on the menu.',
+          keyTakeaway: 'Place required parameters first, followed by default parameters.',
         },
       },
 
-      // --- MEDIUM ---
+      // ---------------------------- MEDIUM ----------------------------
       {
         id: 'q-func-args-unpacking',
         type: 'choice',
@@ -254,8 +302,32 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           keyTakeaway: 'Use **dict to cleanly pass configuration maps into keyword parameters.',
         },
       },
+      {
+        id: 'q-func-local-shadowing',
+        type: 'choice',
+        difficulty: 'Medium',
+        concept: 'Function Local Parameter Shadowing',
+        question: 'What is printed after calling process(x) where x is also global?',
+        codeSnippet: `x = 50\n\ndef process(x):\n    x = x + 10\n    return x\n\nprint(process(x))\nprint(x)`,
+        options: [
+          '60 then 50',
+          '60 then 60',
+          '50 then 50',
+          'UnboundLocalError',
+        ],
+        correctIndex: 0,
+        explanation: 'The parameter x inside process() shadows the outer global variable x. Reassigning x inside the function mutates the local variable x only. The global x remains 50.',
+        commonMisconception: 'Believing reassigning a parameter variable modifies the caller variable.',
+        solutionHint: 'Parameter reassignments only rebind the local name.',
+        teachingGuide: {
+          overview: 'Function arguments are local variables in the function frame.',
+          whyItHappens: 'Using the same variable name inside and outside creates confusion.',
+          mentalModel: 'The local name is a separate label inside the function room. Changing what it points to does not change the label outside.',
+          keyTakeaway: 'Rebinding a parameter never affects the variable in the caller scope.',
+        },
+      },
 
-      // --- DIFFICULT (from CSV) ---
+      // ---------------------------- DIFFICULT ----------------------------
       {
         id: 'q-m3-mutable-defaults',
         type: 'choice',
@@ -279,10 +351,10 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         commonMisconception: 'Mutable Default Argument: Assuming default argument expressions execute dynamically on each call.',
         solutionHint: 'Use lst=None and initialize lst = [] inside the function body.',
         teachingGuide: {
-          overview: 'Default arguments are created once when Python reads the `def` statement.',
+          overview: 'Default arguments are created once when Python reads the def statement.',
           whyItHappens: 'Other languages evaluate defaults at call time.',
           mentalModel: 'The default argument is a shared box attached to the function object. Callers without their own box share that same box.',
-          keyTakeaway: 'Always use `param=None` for mutable defaults.',
+          keyTakeaway: 'Always use param=None for mutable defaults.',
         },
       },
       {
@@ -309,9 +381,9 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         solutionHint: 'Declare global counter inside the function before modifying it.',
         teachingGuide: {
           overview: 'Writing to a variable inside a function marks it as local, hiding the global.',
-          whyItHappens: 'You can read globals without `global`, so learners expect writing works the same.',
-          mentalModel: 'The moment Python sees `var = ...` inside a function, it creates a local variable of that name. Reading it before assigning crashes with UnboundLocalError.',
-          keyTakeaway: 'Use `global var_name` when you need to reassign a global variable from inside a function.',
+          whyItHappens: 'You can read globals without global, so learners expect writing works the same.',
+          mentalModel: 'The moment Python sees var = ... inside a function, it creates a local variable of that name. Reading it before assigning crashes with UnboundLocalError.',
+          keyTakeaway: 'Use global var_name when you need to reassign a global variable from inside a function.',
         },
       },
       {
@@ -335,7 +407,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           overview: 'Closures look up variables in outer scopes at runtime, not definition time.',
           whyItHappens: 'Programmers expect snapshots of values at each loop cycle.',
           mentalModel: 'The lambda stores the name "i", not the number at that second. When called later, it looks up whatever "i" is currently holding.',
-          keyTakeaway: 'Use default parameter binding `lambda i=i: i` to capture the value eagerly.',
+          keyTakeaway: 'Use default parameter binding lambda i=i: i to capture the value eagerly.',
         },
       },
     ],
@@ -349,7 +421,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
     courseTitle: 'Python Sequences: Slicing & Boundary Math',
     topicName: 'Sequence Indexing & Slicing',
     questions: [
-      // --- EASY ---
+      // ---------------------------- EASY ----------------------------
       {
         id: 'q-slice-basic-start-stop',
         type: 'choice',
@@ -374,8 +446,32 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           keyTakeaway: 'Splitting at k with s[:k] and s[k:] always preserves the entire sequence.',
         },
       },
+      {
+        id: 'q-slice-first-last',
+        type: 'choice',
+        difficulty: 'Easy',
+        concept: 'Negative Indexing for the Final Element',
+        question: 'What is the most idiomatic way in Python to retrieve the last element of items?',
+        codeSnippet: `items = [10, 20, 30, 40]`,
+        options: [
+          'items[-1]',
+          'items[len(items)]',
+          'items.last()',
+          'items[end]',
+        ],
+        correctIndex: 0,
+        explanation: 'Python natively supports negative indexing: items[-1] directly retrieves the last element. Accessing items[len(items)] causes an IndexError because sequences are 0-indexed.',
+        commonMisconception: 'Accessing index len(items) to get the last item.',
+        solutionHint: 'Negative indices wrap around from the end: -1 is the last item.',
+        teachingGuide: {
+          overview: 'Negative index -1 points to the final element.',
+          whyItHappens: 'Counting starts at 1 in human speech, leading to off-by-one errors.',
+          mentalModel: 'Index -1 wraps around backward to the last slot.',
+          keyTakeaway: 'Always use lst[-1] to access the final element.',
+        },
+      },
 
-      // --- MEDIUM (from CSV) ---
+      // ---------------------------- MEDIUM ----------------------------
       {
         id: 'q-m4-string-immutability',
         type: 'choice',
@@ -400,9 +496,9 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         solutionHint: 'Slice the upper first character and concatenate the rest with s[1:].',
         teachingGuide: {
           overview: 'Strings are immutable objects in memory.',
-          whyItHappens: 'Lists allow item assignment (`lst[0] = x`), so learners assume strings do too.',
+          whyItHappens: 'Lists allow item assignment (lst[0] = x), so learners assume strings do too.',
           mentalModel: 'A string is a sealed block. To change it, slice out pieces and build a new block.',
-          keyTakeaway: 'Use `s[0].upper() + s[1:]` to return a capitalized copy.',
+          keyTakeaway: 'Use s[0].upper() + s[1:] to return a capitalized copy.',
         },
       },
       {
@@ -431,7 +527,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           overview: 'Zero-based indexing means length N ends at index N-1.',
           whyItHappens: 'Counting begins at 1 in human language, leading to index len(lst) bugs.',
           mentalModel: 'For [A, B, C], length is 3, but indices are 0, 1, 2. Index 3 is empty space off the edge.',
-          keyTakeaway: 'Always use `lst[-1]` for the final item.',
+          keyTakeaway: 'Always use lst[-1] for the final item.',
         },
       },
       {
@@ -473,7 +569,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         },
       },
 
-      // --- DIFFICULT ---
+      // ---------------------------- DIFFICULT ----------------------------
       {
         id: 'q-slice-assignment-stride',
         type: 'choice',
@@ -498,6 +594,30 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           keyTakeaway: 'When step != 1, len(assigned_list) must equal the number of sliced positions.',
         },
       },
+      {
+        id: 'q-slice-negative-bounds-step',
+        type: 'choice',
+        difficulty: 'Difficult',
+        concept: 'Negative Bounds Combined with Negative Strides',
+        question: 'What is the output of slicing string "ABCDEFG" with negative step: "ABCDEFG"[-2:-6:-1]?',
+        codeSnippet: `s = "ABCDEFG"\nresult = s[-2:-6:-1]\nprint(result)`,
+        options: [
+          '"FEDC"',
+          '"CDEF"',
+          '"EDCB"',
+          '"" (empty string)',
+        ],
+        correctIndex: 0,
+        explanation: 'In "ABCDEFG", index -2 is "F" (length 7, index 5). Step is -1, so it steps backwards. Stop is -6 ("B", index 1), exclusive. Thus it collects indices 5, 4, 3, 2 which corresponds to characters "F", "E", "D", "C".',
+        commonMisconception: 'Confusing negative indices with backward step directions.',
+        solutionHint: 'Start at index -2 ("F"), step backward until reaching index -6 ("B") exclusive.',
+        teachingGuide: {
+          overview: 'Negative step requires start to be greater than stop in absolute position.',
+          whyItHappens: 'Mixing negative index positions with negative step directions confuses the order.',
+          mentalModel: 'Walk backward from "F" toward the beginning, stopping just before "B".',
+          keyTakeaway: 'For negative steps, the slice runs from right to left.',
+        },
+      },
     ],
   },
 
@@ -509,7 +629,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
     courseTitle: 'Python Syntax & Indentation Fundamentals',
     topicName: 'Syntax, Indentation & Types',
     questions: [
-      // --- EASY (from CSV) ---
+      // ---------------------------- EASY ----------------------------
       {
         id: 'q-m1-indentation',
         type: 'choice',
@@ -627,7 +747,7 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
         },
       },
 
-      // --- MEDIUM ---
+      // ---------------------------- MEDIUM ----------------------------
       {
         id: 'q-syntax-truthiness',
         type: 'choice',
@@ -652,8 +772,32 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           keyTakeaway: 'Be careful when checking boolean flag inputs like "False" or "0" — use explicit comparisons.',
         },
       },
+      {
+        id: 'q-syntax-is-vs-double-equals',
+        type: 'choice',
+        difficulty: 'Medium',
+        concept: 'Identity "is" vs Equality "=="',
+        question: 'What is the output of comparing two independently created lists with == and is?',
+        codeSnippet: `a = [1, 2, 3]\nb = [1, 2, 3]\nprint(a == b)\nprint(a is b)`,
+        options: [
+          'True then False',
+          'True then True',
+          'False then False',
+          'TypeError: cannot compare lists with is',
+        ],
+        correctIndex: 0,
+        explanation: 'The == operator checks whether the contents/values are equal (both lists contain [1, 2, 3], so a == b is True). The is operator checks object identity (whether they point to the exact same memory address, id(a) == id(b)). Since they were allocated separately, a is b is False.',
+        commonMisconception: 'Confusing value equality == with memory identity is.',
+        solutionHint: '== checks values; is checks if they are the exact same object in RAM.',
+        teachingGuide: {
+          overview: '== compares values; is checks object identity.',
+          whyItHappens: 'For small cached integers (-5 to 256), `a is b` might be True, misleading learners into using `is` everywhere.',
+          mentalModel: 'Two identical blue shirts from different stores are equal in style (==), but they are not the same physical shirt (is).',
+          keyTakeaway: 'Use == for values. Only use `is` when comparing to singletons like `None` (`x is None`).',
+        },
+      },
 
-      // --- DIFFICULT ---
+      // ---------------------------- DIFFICULT ----------------------------
       {
         id: 'q-syntax-short-circuit',
         type: 'choice',
@@ -675,7 +819,31 @@ export const pythonTopicQuizzes: Record<string, TopicQuiz> = {
           overview: 'Python natively supports chained comparisons like a < b < c.',
           whyItHappens: 'In C/JS, 1 < x < 5 is a notorious bug because (1 < x) yields 0 or 1, which is always < 5.',
           mentalModel: 'Python translates a < b < c into (a < b) and (b < c) behind the scenes, caching the middle operand.',
-          keyTakeaway: 'Use Python chained comparisons `low <= val <= high` for idiomatic range checks.',
+          keyTakeaway: 'Use Python chained comparisons low <= val <= high for idiomatic range checks.',
+        },
+      },
+      {
+        id: 'q-syntax-walrus-scoping',
+        type: 'choice',
+        difficulty: 'Difficult',
+        concept: 'Walrus Operator Scope Leak in Comprehensions',
+        question: 'What is printed after executing a list comprehension containing an assignment expression := ?',
+        codeSnippet: `total = [ (y := x * 2) for x in [1, 2, 3] ]\nprint(y)`,
+        options: [
+          '6',
+          'NameError: name "y" is not defined (comprehension local)',
+          '2',
+          '[2, 4, 6]',
+        ],
+        correctIndex: 0,
+        explanation: 'While standard loop variables in comprehensions (like x) are strictly scoped to the comprehension and do not leak into the enclosing scope, assignment expressions with the walrus operator (y := ...) explicitly leak their bound variable into the enclosing function or module scope! When the loop ends, y is 6.',
+        commonMisconception: 'Assuming walrus operator variables are scoped locally to the comprehension like regular loop variables.',
+        solutionHint: 'The walrus operator := deliberately binds in the enclosing scope.',
+        teachingGuide: {
+          overview: 'Variables bound with := in comprehensions leak into the outer scope.',
+          whyItHappens: 'Python 3 isolated list comprehension iteration variables, but PEP 572 specified that := binds in the enclosing scope.',
+          mentalModel: 'The walrus := punches through the comprehension wall and sets the variable in the surrounding room.',
+          keyTakeaway: 'Be aware that (val := expr) inside a comprehension leaves val bound in your outer function.',
         },
       },
     ],

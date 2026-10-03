@@ -46,15 +46,14 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   onCompleteTask,
   onBack,
 }) => {
-  const { difficulty: globalDifficulty, setDifficulty, getDifficultyBadgeClasses } = useDifficulty();
-  const difficulty = propDifficulty || globalDifficulty;
+  const { difficulty, setDifficulty, getDifficultyBadgeClasses } = useDifficulty();
 
-  // Sync prop difficulty to global context if passed directly
+  // If a propDifficulty is passed on initial entry, initialize it once
   useEffect(() => {
-    if (propDifficulty && propDifficulty !== globalDifficulty) {
+    if (propDifficulty) {
       setDifficulty(propDifficulty);
     }
-  }, [propDifficulty, globalDifficulty, setDifficulty]);
+  }, [propDifficulty, setDifficulty]);
 
   // Topic selection
   const allTopicKeys = Object.keys(pythonTopicQuizzes);
@@ -84,16 +83,23 @@ export const QuizWorkspace: React.FC<QuizWorkspaceProps> = ({
   // Ask quiz difficulty level when quiz workshop starts
   const [showDifficultyPrompt, setShowDifficultyPrompt] = useState<boolean>(true);
 
-  // The active difficulty level dictates which questions are served to the student
-  const [filterByDifficulty, setFilterByDifficulty] = useState<boolean>(true);
-
+  // The active difficulty level dictates which questions are served to the student.
+  // Questions are STRICTLY filtered by difficulty so Easy, Medium, and Difficult NEVER show the same questions.
   const questionsMatchingDifficulty = currentQuiz.questions.filter(
     (q) => q.difficulty === difficulty
   );
 
+  // Fallback to all questions across the curriculum matching THIS EXACT difficulty if this track has fewer
+  const allCurriculumQuestions = Object.values(pythonTopicQuizzes).flatMap((tq) => tq.questions);
+  const fallbackDifficultyQuestions = allCurriculumQuestions.filter(
+    (q) => q.difficulty === difficulty
+  );
+
   const activeQuestions =
-    filterByDifficulty && questionsMatchingDifficulty.length > 0
+    questionsMatchingDifficulty.length > 0
       ? questionsMatchingDifficulty
+      : fallbackDifficultyQuestions.length > 0
+      ? fallbackDifficultyQuestions
       : currentQuiz.questions;
 
   const safeQuestionIndex = Math.min(
