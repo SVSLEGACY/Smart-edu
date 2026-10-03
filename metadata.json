@@ -1,0 +1,8 @@
+{
+  "name": "Learnify - Interactive Learning Platform",
+  "description": "An interactive learning experience featuring course dashboards, video lectures, practice quizzes, and study schedules with smooth transitions and dark mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
