@@ -15,13 +15,11 @@ import { ScreenType } from '../../types';
 interface LearnifySidebarProps {
   currentScreen: ScreenType;
   onNavigate: (screen: ScreenType) => void;
-  onOpenMobileCompanion?: () => void;
 }
 
 export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
   currentScreen,
   onNavigate,
-  onOpenMobileCompanion,
 }) => {
   const isCoursesActive = currentScreen === 'dashboard' || currentScreen === 'course-player';
 
@@ -132,18 +130,6 @@ export const LearnifySidebar: React.FC<LearnifySidebarProps> = ({
 
       {/* Bottom Actions */}
       <div className="flex flex-col items-center gap-3">
-        {/* Quick Launch Mobile Companion App Button */}
-        {onOpenMobileCompanion && (
-          <button
-            onClick={onOpenMobileCompanion}
-            aria-label="Open Mobile Companion"
-            className="w-10 h-10 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center transition-all cursor-pointer hover:scale-105"
-            title="Launch Phone View (Synced Study Tasks & Quizzes)"
-          >
-            <Sparkles className="w-4 h-4" />
-          </button>
-        )}
-
         {/* Exit / Log Out Icon */}
         <button
           onClick={() => onNavigate('dashboard')}

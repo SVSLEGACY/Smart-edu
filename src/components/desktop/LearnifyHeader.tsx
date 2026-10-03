@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Check, ChevronDown, Sparkles, Smartphone, Laptop } from 'lucide-react';
+import { Search, Bell, Check, ChevronDown, Sparkles } from 'lucide-react';
 import { Avatar } from '../common/Avatar';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { currentUser } from '../../data/mockData';
@@ -9,18 +9,12 @@ interface LearnifyHeaderProps {
   onSearch?: (query: string) => void;
   onSelectCourse?: (courseId: string) => void;
   courses: Course[];
-  activeViewMode: 'desktop' | 'mobile-preview' | 'split';
-  onChangeViewMode: (mode: 'desktop' | 'mobile-preview' | 'split') => void;
-  completedCount?: number;
 }
 
 export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
   onSearch,
   onSelectCourse,
   courses,
-  activeViewMode,
-  onChangeViewMode,
-  completedCount = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -124,40 +118,6 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
           )}
         </div>
 
-        {/* View Switcher: Desktop Learnify vs Mobile Companion */}
-        <div className="hidden lg:flex items-center p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200/70 dark:border-zinc-700/60">
-          <button
-            onClick={() => onChangeViewMode('desktop')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeViewMode === 'desktop'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-            title="Desktop / Tablet Learnify Dashboard"
-          >
-            <Laptop className="w-3.5 h-3.5" />
-            <span>Desktop</span>
-          </button>
-
-          <button
-            onClick={() => onChangeViewMode('mobile-preview')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeViewMode === 'mobile-preview'
-                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-            title="Switch to Phone Interface with study schedule and quizzes"
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Phone View</span>
-            {completedCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-500 text-white leading-none">
-                {completedCount} done
-              </span>
-            )}
-          </button>
-        </div>
-
         {/* Dark Mode Switcher */}
         <ThemeToggle />
 
@@ -223,21 +183,6 @@ export const LearnifyHeader: React.FC<LearnifyHeaderProps> = ({
                 <p className="text-[11px] text-zinc-400">{currentUser.handle}</p>
               </div>
               <div className="py-1">
-                <button
-                  onClick={() => {
-                    onChangeViewMode('mobile-preview');
-                    setShowProfileMenu(false);
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl hover:bg-orange-50 dark:hover:bg-zinc-700/60 text-zinc-800 dark:text-zinc-200 cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-                    Switch to Len's View
-                  </span>
-                  <span className="text-[10px] bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-md font-semibold">
-                    Mobile
-                  </span>
-                </button>
                 <div className="px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 flex justify-between">
                   <span>Enrolled Courses</span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100">3 active</span>

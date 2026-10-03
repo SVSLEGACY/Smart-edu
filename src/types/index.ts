@@ -1,4 +1,4 @@
-export type ScreenType = 'dashboard' | 'course-player' | 'notes' | 'messages' | 'bookmarks' | 'settings' | 'mobile-dashboard' | 'mobile-quiz' | 'mobile-schedule';
+export type ScreenType = 'dashboard' | 'course-player' | 'notes' | 'messages' | 'bookmarks' | 'settings';
 
 export type CategoryFilter = 'All courses' | 'Marketing' | 'Computer Science' | 'Psychology';
 
